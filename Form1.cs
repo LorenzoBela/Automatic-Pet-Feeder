@@ -374,9 +374,6 @@ namespace Automatic_Pet_Feeder
         {
             try
             {
-                // Save feeding schedule before closing
-                SaveFeedingSchedule();
-                
                 if (_serialPort != null && _serialPort.IsOpen)
                 {
                     _serialPort.Close();

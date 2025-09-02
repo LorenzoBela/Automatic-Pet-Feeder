@@ -1,35 +1,35 @@
-# ?? Automatic Pet Feeder - Premium Edition
+# Automatic Pet Feeder - Premium Edition
 
-[![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.7.2-blue.svg)](https://dotnet.microsoft.com/download/dotnet-framework)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![C#](https://img.shields.io/badge/language-C%23-239120.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![Windows Forms](https://img.shields.io/badge/UI-Windows%20Forms-0078d4.svg)](https://docs.microsoft.com/en-us/dotnet/desktop/winforms/)
+![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.7.2-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![C#](https://img.shields.io/badge/language-C%23-239120.svg)
+![Windows Forms](https://img.shields.io/badge/UI-Windows%20Forms-0078d4.svg)
 
 A sophisticated Windows Forms application for controlling an automatic pet feeder system with Arduino integration. Features a luxurious dark theme with gold accents and elegant Garamond typography.
 
-## ? Features
+## Features
 
-### ?? Core Functionality
+### Core Functionality
 - **Arduino Integration**: Serial communication with Arduino-based feeder hardware
 - **Scheduled Feeding**: Multiple feeding interval options (hourly, daily, custom)
 - **Manual Dispensing**: On-demand food dispensing with customizable duration
 - **Real-time Monitoring**: Live countdown timer and current time display
 - **Persistent Settings**: Automatic saving and loading of feeding schedules
 
-### ?? Premium Design
+### Premium Design
 - **Luxurious UI**: Dark navy theme with gold accents
 - **Modern Typography**: Elegant Garamond font throughout
 - **Flat Design**: Clean, modern button and panel styling
 - **Responsive Layout**: Professional dashboard-style interface
 - **Status Indicators**: Color-coded connection and feeding status
 
-### ?? Technical Features
+### Technical Features
 - **Serial Port Management**: Robust Arduino connection handling
 - **Data Persistence**: Settings saved using application settings
 - **Error Handling**: Comprehensive error management and user feedback
 - **Multi-Form Architecture**: Organized code structure with separate forms
 
-## ??? Screenshots
+## Screenshots
 
 ### Main Dashboard
 The primary interface showing connection status, feeding schedule, and real-time monitoring.
@@ -40,7 +40,7 @@ Configure feeding times and intervals with an intuitive interface.
 ### Manual Dispense
 Manually control food dispensing with progress tracking.
 
-## ?? Getting Started
+## Getting Started
 
 ### Prerequisites
 - **.NET Framework 4.7.2** or higher
@@ -100,16 +100,16 @@ Manually control food dispensing with progress tracking.
    }
    ```
 
-## ?? Usage Guide
+## Usage Guide
 
-### ?? Connecting to Arduino
+### Connecting to Arduino
 
 1. **Connect your Arduino** via USB to your computer
 2. **Click "Connect"** on the main dashboard
 3. **Verify connection** - status should show "Connected" in blue
 4. The application will automatically detect COM ports and attempt connection
 
-### ? Setting Feeding Schedule
+### Setting Feeding Schedule
 
 1. **Click "Set Feeding Time"** to open the feeding settings
 2. **Choose feeding time** using the time picker (12-hour format)
@@ -120,21 +120,21 @@ Manually control food dispensing with progress tracking.
    - Three Times a Day
 4. **Click "Save Settings"** to apply the schedule
 
-### ?? Manual Dispensing
+### Manual Dispensing
 
 1. **Click "Manual Dispense"** to open the manual control
 2. **Set dispense time** (1-30 seconds)
 3. **Click "Dispense Now"** to start feeding
 4. **Monitor progress** with the progress bar
 
-### ?? Monitoring
+### Monitoring
 
 - **Current Time**: Always displayed and updated every second
 - **Next Feeding**: Shows countdown to next scheduled feeding
 - **Connection Status**: Real-time Arduino connection status
 - **Food Level**: Monitor food container status (if equipped)
 
-## ??? Configuration
+## Configuration
 
 ### Feeding Intervals
 | Interval | Description | Use Case |
@@ -151,7 +151,7 @@ Manually control food dispensing with progress tracking.
 - **Handshake**: PING/PONG protocol
 - **Timeout**: 1 second
 
-## ?? Technical Architecture
+## Technical Architecture
 
 ### Project Structure
 ```
@@ -188,7 +188,7 @@ Settings are automatically saved using .NET Application Settings:
 - `NextFeedingTime` - Stores next scheduled feeding time
 - `FeedingInterval` - Stores selected feeding interval
 
-## ?? Design System
+## Design System
 
 ### Color Palette
 - **Primary Background**: `#17202A` (Deep Navy)
@@ -207,28 +207,28 @@ Settings are automatically saved using .NET Application Settings:
 - **Body Text**: 12pt Regular
 - **Small Text**: 10pt Regular/Italic
 
-## ?? Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-**? "Port COM3 not found"**
+**"Port COM3 not found"**
 - Check Arduino connection
 - Try different USB ports
 - Verify Arduino is powered on
 - Check Windows Device Manager
 
-**? "No device response"**
+**"No device response"**
 - Verify Arduino sketch is uploaded
 - Check serial communication code
 - Ensure baud rate matches (9600)
 - Try disconnecting and reconnecting
 
-**? "Feeding schedule not saving"**
+**"Feeding schedule not saving"**
 - Check application permissions
 - Verify settings file access
 - Run as administrator if needed
 
-**? "Connection keeps dropping"**
+**"Connection keeps dropping"**
 - Check USB cable quality
 - Verify stable power supply
 - Update Arduino drivers
@@ -239,7 +239,7 @@ Enable debug mode for additional logging:
 2. Check Output window for detailed logs
 3. Monitor serial communication
 
-## ?? Contributing
+## Contributing
 
 We welcome contributions! Please follow these steps:
 
@@ -265,24 +265,24 @@ We welcome contributions! Please follow these steps:
 - Maintain the premium design aesthetic
 - Update README for new features
 
-## ?? License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ????? Author
+## Author
 
 **Lorenzo Bela**
 - GitHub: [@LorenzoBela](https://github.com/LorenzoBela)
 - Repository: [Automatic-Pet-Feeder](https://github.com/LorenzoBela/Automatic-Pet-Feeder)
 
-## ?? Acknowledgments
+## Acknowledgments
 
 - Windows Forms team for the robust UI framework
 - Arduino community for hardware inspiration
 - Contributors and testers
 - Pet owners who inspired this project
 
-## ?? Support
+## Support
 
 If you encounter any issues or have questions:
 
@@ -293,10 +293,6 @@ If you encounter any issues or have questions:
 
 ---
 
-<div align="center">
+**Made with care for pet lovers everywhere**
 
-**Made with ?? for pet lovers everywhere**
-
-[? Star this repo](https://github.com/LorenzoBela/Automatic-Pet-Feeder) | [?? Report Bug](https://github.com/LorenzoBela/Automatic-Pet-Feeder/issues) | [?? Request Feature](https://github.com/LorenzoBela/Automatic-Pet-Feeder/issues)
-
-</div>
+[Star this repo](https://github.com/LorenzoBela/Automatic-Pet-Feeder) | [Report Bug](https://github.com/LorenzoBela/Automatic-Pet-Feeder/issues) | [Request Feature](https://github.com/LorenzoBela/Automatic-Pet-Feeder/issues)
