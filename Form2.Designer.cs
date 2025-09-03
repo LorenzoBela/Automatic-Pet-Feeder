@@ -49,11 +49,12 @@ namespace Automatic_Pet_Feeder
             // 
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
-            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(160)))), ((int)(((byte)(255)))));
+            this.label1.Font = new System.Drawing.Font("Garamond", 26F, System.Drawing.FontStyle.Bold);
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
+
             this.label1.Location = new System.Drawing.Point(200, 30);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(216, 41);
+            this.label1.Size = new System.Drawing.Size(250, 39);
             this.label1.TabIndex = 0;
             this.label1.Text = "Feeding Settings";
             // 
@@ -63,14 +64,15 @@ namespace Automatic_Pet_Feeder
             this.buttonExit.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonExit.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.buttonExit.Depth = 0;
-            this.buttonExit.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.buttonExit.Font = new System.Drawing.Font("Playfair Display", 12F, System.Drawing.FontStyle.Bold);
             this.buttonExit.HighEmphasis = true;
             this.buttonExit.Icon = null;
             this.buttonExit.Location = new System.Drawing.Point(520, 390);
             this.buttonExit.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.buttonExit.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             this.buttonExit.Name = "buttonExit";
-            this.buttonExit.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.buttonExit.NoAccentTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(68)))), ((int)(((byte)(66)))));
+
             this.buttonExit.Size = new System.Drawing.Size(120, 45);
             this.buttonExit.TabIndex = 1;
             this.buttonExit.Text = "Exit";
@@ -86,13 +88,13 @@ namespace Automatic_Pet_Feeder
             this.panel1.Background = true;
             this.panel1.Background_WidthPen = 3F;
             this.panel1.BackgroundPen = true;
-            this.panel1.ColorBackground = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(52)))), ((int)(((byte)(68)))));
-            this.panel1.ColorBackground_1 = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(52)))), ((int)(((byte)(68)))));
-            this.panel1.ColorBackground_2 = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(63)))), ((int)(((byte)(86)))));
-            this.panel1.ColorBackground_Pen = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(200)))), ((int)(((byte)(238)))));
-            this.panel1.ColorLighting = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(200)))), ((int)(((byte)(238)))));
-            this.panel1.ColorPen_1 = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(52)))), ((int)(((byte)(68)))));
-            this.panel1.ColorPen_2 = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(63)))), ((int)(((byte)(86)))));
+            this.panel1.ColorBackground = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(71)))), ((int)(((byte)(94)))));
+            this.panel1.ColorBackground_1 = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(71)))), ((int)(((byte)(94)))));
+            this.panel1.ColorBackground_2 = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(81)))), ((int)(((byte)(104)))));
+            this.panel1.ColorBackground_Pen = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
+            this.panel1.ColorLighting = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
+            this.panel1.ColorPen_1 = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(71)))), ((int)(((byte)(94)))));
+            this.panel1.ColorPen_2 = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(81)))), ((int)(((byte)(104)))));
             this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.comboBoxInterval);
             this.panel1.Controls.Add(this.label5);
@@ -123,20 +125,21 @@ namespace Automatic_Pet_Feeder
             // 
             this.label6.AutoSize = true;
             this.label6.BackColor = System.Drawing.Color.Transparent;
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(88)))), ((int)(((byte)(100)))));
+            this.label6.Font = new System.Drawing.Font("Cormorant Garamond", 11F, System.Drawing.FontStyle.Italic);
+            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(183)))), ((int)(((byte)(198)))));
+
             this.label6.Location = new System.Drawing.Point(35, 160);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(178, 15);
+            this.label6.Size = new System.Drawing.Size(175, 18);
             this.label6.TabIndex = 7;
             this.label6.Text = "Set feeding time and repeat frequency";
             // 
             // comboBoxInterval
             // 
-            this.comboBoxInterval.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.comboBoxInterval.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(81)))), ((int)(((byte)(104)))));
             this.comboBoxInterval.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxInterval.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboBoxInterval.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.comboBoxInterval.Font = new System.Drawing.Font("Cormorant Garamond", 13F);
             this.comboBoxInterval.ForeColor = System.Drawing.Color.White;
             this.comboBoxInterval.FormattingEnabled = true;
             this.comboBoxInterval.Items.AddRange(new object[] {
@@ -158,11 +161,11 @@ namespace Automatic_Pet_Feeder
             // 
             this.label5.AutoSize = true;
             this.label5.BackColor = System.Drawing.Color.Transparent;
-            this.label5.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(88)))), ((int)(((byte)(100)))));
+            this.label5.Font = new System.Drawing.Font("Cormorant Garamond", 13F, System.Drawing.FontStyle.Regular);
+            this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(209)))), ((int)(((byte)(216)))), ((int)(((byte)(224)))));
             this.label5.Location = new System.Drawing.Point(35, 90);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(58, 20);
+            this.label5.Size = new System.Drawing.Size(56, 21);
             this.label5.TabIndex = 5;
             this.label5.Text = "Interval:";
             // 
@@ -170,11 +173,12 @@ namespace Automatic_Pet_Feeder
             // 
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Transparent;
-            this.label4.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
-            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(88)))), ((int)(((byte)(100)))));
+            this.label4.Font = new System.Drawing.Font("Cormorant Garamond", 10F, System.Drawing.FontStyle.Italic);
+            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(183)))), ((int)(((byte)(198)))));
+
             this.label4.Location = new System.Drawing.Point(330, 40);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(61, 15);
+            this.label4.Size = new System.Drawing.Size(61, 16);
             this.label4.TabIndex = 4;
             this.label4.Text = "(12-hr time)";
             // 
@@ -182,11 +186,12 @@ namespace Automatic_Pet_Feeder
             // 
             this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(160)))), ((int)(((byte)(255)))));
+            this.label3.Font = new System.Drawing.Font("Cormorant Garamond", 13F, System.Drawing.FontStyle.Bold);
+            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
+
             this.label3.Location = new System.Drawing.Point(35, 135);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(99, 20);
+            this.label3.Size = new System.Drawing.Size(94, 21);
             this.label3.TabIndex = 3;
             this.label3.Text = "Next Feeding:";
             // 
@@ -196,7 +201,7 @@ namespace Automatic_Pet_Feeder
             this.buttonSave.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonSave.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.buttonSave.Depth = 0;
-            this.buttonSave.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.buttonSave.Font = new System.Drawing.Font("Playfair Display", 12F, System.Drawing.FontStyle.Bold);
             this.buttonSave.HighEmphasis = true;
             this.buttonSave.Icon = null;
             this.buttonSave.Location = new System.Drawing.Point(190, 185);
@@ -215,9 +220,11 @@ namespace Automatic_Pet_Feeder
             // dateTimePicker1
             // 
             this.dateTimePicker1.CalendarForeColor = System.Drawing.Color.White;
-            this.dateTimePicker1.CalendarMonthBackground = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.dateTimePicker1.CalendarMonthBackground = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(81)))), ((int)(((byte)(104)))));
+            this.dateTimePicker1.CalendarTitleBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
+            this.dateTimePicker1.CalendarTitleForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(39)))), ((int)(((byte)(52)))));
             this.dateTimePicker1.CustomFormat = "h:mm tt";
-            this.dateTimePicker1.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.dateTimePicker1.Font = new System.Drawing.Font("Cormorant Garamond", 13F);
             this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.dateTimePicker1.Location = new System.Drawing.Point(200, 35);
             this.dateTimePicker1.Name = "dateTimePicker1";
@@ -230,11 +237,11 @@ namespace Automatic_Pet_Feeder
             // 
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Transparent;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(88)))), ((int)(((byte)(100)))));
+            this.label2.Font = new System.Drawing.Font("Cormorant Garamond", 13F, System.Drawing.FontStyle.Regular);
+            this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(209)))), ((int)(((byte)(216)))), ((int)(((byte)(224)))));
             this.label2.Location = new System.Drawing.Point(35, 40);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(94, 20);
+            this.label2.Size = new System.Drawing.Size(92, 21);
             this.label2.TabIndex = 0;
             this.label2.Text = "Feeding Time:";
             // 
@@ -242,7 +249,7 @@ namespace Automatic_Pet_Feeder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(33)))), ((int)(((byte)(36)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(39)))), ((int)(((byte)(52)))));
             this.ClientSize = new System.Drawing.Size(650, 450);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonExit);
@@ -251,7 +258,7 @@ namespace Automatic_Pet_Feeder
             this.MaximizeBox = false;
             this.Name = "Form2";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Feeding Settings - Premium Edition";
+            this.Text = "Feeding Settings - Luxury Edition";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);
