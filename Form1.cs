@@ -24,6 +24,11 @@ namespace Automatic_Pet_Feeder
         private const int MAX_LOG_LINES = 1000; // Maximum lines to keep in log
         private int logLineCount = 0;
 
+        // Weight sensor variables
+        private double currentWeight = 0.0;
+        private double lastWeightReading = 0.0;
+        private bool isWeightStable = false;
+
         public Form1()
         {
             InitializeComponent();
@@ -39,8 +44,94 @@ namespace Automatic_Pet_Feeder
             // Initialize Arduino log
             InitializeArduinoLog();
 
+            // Initialize weight monitor
+            InitializeWeightMonitor();
+
             // Wire up event handlers
             buttonClearLog.Click += buttonClearLog_Click;
+        }
+
+        private void InitializeWeightMonitor()
+        {
+            // Set initial weight status
+            labelWeightValue.Text = "Not Connected";
+            labelWeightValue.ForeColor = Color.FromArgb(255, 165, 79); // Orange
+        }
+
+        private void UpdateWeightDisplay(double weight)
+        {
+            try
+            {
+                // Ensure we're on the UI thread
+                if (labelWeightValue.InvokeRequired)
+                {
+                    labelWeightValue.Invoke(new Action<double>(UpdateWeightDisplay), weight);
+                    return;
+                }
+
+                currentWeight = weight;
+                labelWeightValue.Text = $"{weight:F1}g";
+
+                // Update color based on weight level
+                if (weight >= 200) // Full bowl
+                {
+                    labelWeightValue.ForeColor = Color.FromArgb(46, 204, 113); // Green
+                    labelWeightValue.Text += " (Full)";
+                }
+                else if (weight >= 50) // Moderate amount
+                {
+                    labelWeightValue.ForeColor = Color.FromArgb(243, 156, 18); // Orange
+                    labelWeightValue.Text += " (Moderate)";
+                }
+                else if (weight >= 10) // Low amount
+                {
+                    labelWeightValue.ForeColor = Color.FromArgb(231, 76, 60); // Red
+                    labelWeightValue.Text += " (Low)";
+                }
+                else // Empty or nearly empty
+                {
+                    labelWeightValue.ForeColor = Color.FromArgb(169, 68, 66); // Dark red
+                    labelWeightValue.Text += " (Empty)";
+                }
+
+                // Check for weight stability (for feeding detection)
+                CheckWeightStability(weight);
+
+            }
+            catch (Exception ex)
+            {
+                AppendToLog($"Error updating weight display: {ex.Message}", Color.FromArgb(231, 76, 60));
+            }
+        }
+
+        private void CheckWeightStability(double weight)
+        {
+            // Check if weight has changed significantly (indicating feeding or dispensing)
+            double weightDifference = Math.Abs(weight - lastWeightReading);
+            
+            if (weightDifference > 5.0) // Significant change (more than 5g)
+            {
+                if (weight > lastWeightReading)
+                {
+                    AppendToLog($"Food dispensed detected: +{weightDifference:F1}g (Total: {weight:F1}g)", Color.FromArgb(52, 152, 219));
+                }
+                else
+                {
+                    AppendToLog($"Pet feeding detected: -{weightDifference:F1}g (Remaining: {weight:F1}g)", Color.FromArgb(155, 89, 182));
+                }
+                
+                isWeightStable = false;
+            }
+            else if (weightDifference < 1.0) // Stable weight
+            {
+                if (!isWeightStable)
+                {
+                    isWeightStable = true;
+                    AppendToLog($"Weight stabilized at {weight:F1}g", Color.FromArgb(149, 165, 166));
+                }
+            }
+
+            lastWeightReading = weight;
         }
 
         private void InitializeArduinoLog()
@@ -216,8 +307,31 @@ namespace Automatic_Pet_Feeder
         {
             Color messageColor = Color.FromArgb(189, 195, 199); // Default gray
 
+            // Check for weight sensor data
+            if (data.ToLower().Contains("weight:") || data.ToLower().Contains("w:"))
+            {
+                // Extract weight value from Arduino data
+                // Expected format: "Weight: 123.4" or "W: 123.4"
+                try
+                {
+                    string[] parts = data.Split(':');
+                    if (parts.Length >= 2)
+                    {
+                        string weightStr = parts[1].Trim().Replace("g", "").Replace("grams", "");
+                        if (double.TryParse(weightStr, out double weight))
+                        {
+                            UpdateWeightDisplay(weight);
+                            messageColor = Color.FromArgb(155, 89, 182); // Purple for weight data
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppendToLog($"Error parsing weight data: {ex.Message}", Color.FromArgb(231, 76, 60));
+                }
+            }
             // Determine color based on message content
-            if (data.ToLower().Contains("error") || data.ToLower().Contains("fail"))
+            else if (data.ToLower().Contains("error") || data.ToLower().Contains("fail"))
             {
                 messageColor = Color.FromArgb(231, 76, 60); // Red
             }
@@ -458,6 +572,10 @@ namespace Automatic_Pet_Feeder
                             label3.Text = "Connected to " + portName + " at " + baudRate + " baud. Reply: " + response;
                             AppendToLog($"Arduino connected successfully! Response: {response.Trim()}", Color.FromArgb(46, 204, 113));
                             UpdateLogStatus("• Connected & listening");
+                            
+                            // Update weight monitor status
+                            labelWeightValue.Text = "Waiting for data...";
+                            labelWeightValue.ForeColor = Color.FromArgb(52, 152, 219); // Blue
                         }
                         else
                         {
@@ -542,6 +660,10 @@ namespace Automatic_Pet_Feeder
                         label3.Text = "Disconnected from " + _serialPort.PortName + ".";
                         AppendToLog($"Disconnected from {_serialPort.PortName}", Color.FromArgb(243, 156, 18));
                         UpdateLogStatus("• Disconnected");
+                        
+                        // Reset weight monitor
+                        labelWeightValue.Text = "Not Connected";
+                        labelWeightValue.ForeColor = Color.FromArgb(255, 165, 79); // Orange
                     }
                     else
                     {
@@ -612,6 +734,11 @@ namespace Automatic_Pet_Feeder
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void labelWeightValue_Click(object sender, EventArgs e)
         {
 
         }

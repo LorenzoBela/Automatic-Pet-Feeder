@@ -56,12 +56,17 @@
             this.labelLogTitle = new System.Windows.Forms.Label();
             this.labelLogStatus = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.panelWeightMonitor = new System.Windows.Forms.Panel();
+            this.labelWeightTitle = new System.Windows.Forms.Label();
+            this.labelWeightStatus = new System.Windows.Forms.Label();
+            this.labelWeightValue = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panelArduinoLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.panelWeightMonitor.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -235,7 +240,7 @@
             this.panel2.Controls.Add(this.label5);
             this.panel2.Controls.Add(this.label6);
             this.panel2.Controls.Add(this.label7);
-            this.panel2.Location = new System.Drawing.Point(50, 340);
+            this.panel2.Location = new System.Drawing.Point(50, 330);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(350, 100);
             this.panel2.TabIndex = 13;
@@ -259,52 +264,52 @@
             this.panel4.Controls.Add(this.label9);
             this.panel4.Controls.Add(this.labelCurrentTime);
             this.panel4.Controls.Add(this.label8);
-            this.panel4.Location = new System.Drawing.Point(450, 310);
+            this.panel4.Location = new System.Drawing.Point(450, 300);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(430, 130);
+            this.panel4.Size = new System.Drawing.Size(430, 243);
             this.panel4.TabIndex = 15;
             // 
             // labelCountdown
             // 
             this.labelCountdown.AutoSize = true;
-            this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 27.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(165)))), ((int)(((byte)(79)))));
-            this.labelCountdown.Location = new System.Drawing.Point(25, 95);
+            this.labelCountdown.Location = new System.Drawing.Point(27, 170);
             this.labelCountdown.Name = "labelCountdown";
-            this.labelCountdown.Size = new System.Drawing.Size(222, 26);
+            this.labelCountdown.Size = new System.Drawing.Size(366, 42);
             this.labelCountdown.TabIndex = 3;
             this.labelCountdown.Text = "No schedule set yet";
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(209)))), ((int)(((byte)(216)))), ((int)(((byte)(224)))));
-            this.label9.Location = new System.Drawing.Point(25, 70);
+            this.label9.Location = new System.Drawing.Point(27, 125);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(130, 24);
+            this.label9.Size = new System.Drawing.Size(215, 37);
             this.label9.TabIndex = 2;
             this.label9.Text = "Next Feeding:";
             // 
             // labelCurrentTime
             // 
             this.labelCurrentTime.AutoSize = true;
-            this.labelCurrentTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCurrentTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(139)))), ((int)(((byte)(34)))));
-            this.labelCurrentTime.Location = new System.Drawing.Point(25, 45);
+            this.labelCurrentTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCurrentTime.ForeColor = System.Drawing.Color.White;
+            this.labelCurrentTime.Location = new System.Drawing.Point(15, 60);
             this.labelCurrentTime.Name = "labelCurrentTime";
-            this.labelCurrentTime.Size = new System.Drawing.Size(146, 26);
+            this.labelCurrentTime.Size = new System.Drawing.Size(308, 55);
             this.labelCurrentTime.TabIndex = 1;
             this.labelCurrentTime.Text = "12:00:00 PM";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Garamond", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Font = new System.Drawing.Font("Garamond", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
             this.label8.Location = new System.Drawing.Point(25, 15);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(136, 27);
+            this.label8.Size = new System.Drawing.Size(178, 36);
             this.label8.TabIndex = 0;
             this.label8.Text = "Time Status";
             // 
@@ -322,7 +327,7 @@
             this.panelArduinoLog.Controls.Add(this.buttonClearLog);
             this.panelArduinoLog.Controls.Add(this.labelLogTitle);
             this.panelArduinoLog.Controls.Add(this.labelLogStatus);
-            this.panelArduinoLog.Location = new System.Drawing.Point(50, 470);
+            this.panelArduinoLog.Location = new System.Drawing.Point(50, 560);
             this.panelArduinoLog.Name = "panelArduinoLog";
             this.panelArduinoLog.Size = new System.Drawing.Size(830, 280);
             this.panelArduinoLog.TabIndex = 16;
@@ -391,12 +396,59 @@
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
+            // panelWeightMonitor
+            // 
+            this.panelWeightMonitor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(71)))), ((int)(((byte)(94)))));
+            this.panelWeightMonitor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelWeightMonitor.Controls.Add(this.labelWeightTitle);
+            this.panelWeightMonitor.Controls.Add(this.labelWeightStatus);
+            this.panelWeightMonitor.Controls.Add(this.labelWeightValue);
+            this.panelWeightMonitor.Location = new System.Drawing.Point(50, 450);
+            this.panelWeightMonitor.Name = "panelWeightMonitor";
+            this.panelWeightMonitor.Size = new System.Drawing.Size(350, 100);
+            this.panelWeightMonitor.TabIndex = 18;
+            // 
+            // labelWeightTitle
+            // 
+            this.labelWeightTitle.AutoSize = true;
+            this.labelWeightTitle.Font = new System.Drawing.Font("Garamond", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelWeightTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
+            this.labelWeightTitle.Location = new System.Drawing.Point(25, 20);
+            this.labelWeightTitle.Name = "labelWeightTitle";
+            this.labelWeightTitle.Size = new System.Drawing.Size(236, 27);
+            this.labelWeightTitle.TabIndex = 9;
+            this.labelWeightTitle.Text = "Food Weight Monitor";
+            // 
+            // labelWeightStatus
+            // 
+            this.labelWeightStatus.AutoSize = true;
+            this.labelWeightStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelWeightStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(209)))), ((int)(((byte)(216)))), ((int)(((byte)(224)))));
+            this.labelWeightStatus.Location = new System.Drawing.Point(25, 55);
+            this.labelWeightStatus.Name = "labelWeightStatus";
+            this.labelWeightStatus.Size = new System.Drawing.Size(74, 24);
+            this.labelWeightStatus.TabIndex = 10;
+            this.labelWeightStatus.Text = "Weight:";
+            // 
+            // labelWeightValue
+            // 
+            this.labelWeightValue.AutoSize = true;
+            this.labelWeightValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelWeightValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(165)))), ((int)(((byte)(79)))));
+            this.labelWeightValue.Location = new System.Drawing.Point(95, 55);
+            this.labelWeightValue.Name = "labelWeightValue";
+            this.labelWeightValue.Size = new System.Drawing.Size(150, 24);
+            this.labelWeightValue.TabIndex = 11;
+            this.labelWeightValue.Text = "Not Connected";
+            this.labelWeightValue.Click += new System.EventHandler(this.labelWeightValue_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(39)))), ((int)(((byte)(52)))));
-            this.ClientSize = new System.Drawing.Size(930, 780);
+            this.ClientSize = new System.Drawing.Size(930, 870);
+            this.Controls.Add(this.panelWeightMonitor);
             this.Controls.Add(this.panelArduinoLog);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel3);
@@ -420,6 +472,8 @@
             this.panelArduinoLog.ResumeLayout(false);
             this.panelArduinoLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.panelWeightMonitor.ResumeLayout(false);
+            this.panelWeightMonitor.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -453,6 +507,10 @@
         private System.Windows.Forms.Label labelLogTitle;
         private System.Windows.Forms.Label labelLogStatus;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Panel panelWeightMonitor;
+        private System.Windows.Forms.Label labelWeightTitle;
+        private System.Windows.Forms.Label labelWeightStatus;
+        private System.Windows.Forms.Label labelWeightValue;
     }
 }
 
