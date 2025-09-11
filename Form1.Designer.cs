@@ -403,7 +403,7 @@
             this.panelWeightMonitor.Controls.Add(this.labelWeightTitle);
             this.panelWeightMonitor.Controls.Add(this.labelWeightStatus);
             this.panelWeightMonitor.Controls.Add(this.labelWeightValue);
-            this.panelWeightMonitor.Location = new System.Drawing.Point(50, 450);
+            this.panelWeightMonitor.Location = new System.Drawing.Point(50, 443);
             this.panelWeightMonitor.Name = "panelWeightMonitor";
             this.panelWeightMonitor.Size = new System.Drawing.Size(350, 100);
             this.panelWeightMonitor.TabIndex = 18;

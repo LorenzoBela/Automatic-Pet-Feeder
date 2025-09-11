@@ -13,18 +13,14 @@ namespace Automatic_Pet_Feeder
 {
     public partial class Form1 : Form
     {
-        // SerialPort para sa Arduino connection
         private SerialPort _serialPort;
         
-        // Feeding schedule variables
         private DateTime? nextFeedingTime = null;
         private string feedingInterval = "Every Day";
 
-        // Arduino log variables
-        private const int MAX_LOG_LINES = 1000; // Maximum lines to keep in log
+        private const int MAX_LOG_LINES = 1000;
         private int logLineCount = 0;
 
-        // Weight sensor variables
         private double currentWeight = 0.0;
         private double lastWeightReading = 0.0;
         private bool isWeightStable = false;
@@ -32,37 +28,29 @@ namespace Automatic_Pet_Feeder
         public Form1()
         {
             InitializeComponent();
-            // Default status: Ready
             label3.Text = "Ready";
             
-            // Load saved feeding schedule
             LoadFeedingSchedule();
             
-            // Start the timer for real-time updates
             timer1.Start();
 
-            // Initialize Arduino log
             InitializeArduinoLog();
 
-            // Initialize weight monitor
             InitializeWeightMonitor();
 
-            // Wire up event handlers
             buttonClearLog.Click += buttonClearLog_Click;
         }
 
         private void InitializeWeightMonitor()
         {
-            // Set initial weight status
             labelWeightValue.Text = "Not Connected";
-            labelWeightValue.ForeColor = Color.FromArgb(255, 165, 79); // Orange
+            labelWeightValue.ForeColor = Color.FromArgb(255, 165, 79);
         }
 
         private void UpdateWeightDisplay(double weight)
         {
             try
             {
-                // Ensure we're on the UI thread
                 if (labelWeightValue.InvokeRequired)
                 {
                     labelWeightValue.Invoke(new Action<double>(UpdateWeightDisplay), weight);
@@ -72,29 +60,27 @@ namespace Automatic_Pet_Feeder
                 currentWeight = weight;
                 labelWeightValue.Text = $"{weight:F1}g";
 
-                // Update color based on weight level
-                if (weight >= 200) // Full bowl
+                if (weight >= 200)
                 {
-                    labelWeightValue.ForeColor = Color.FromArgb(46, 204, 113); // Green
+                    labelWeightValue.ForeColor = Color.FromArgb(46, 204, 113);
                     labelWeightValue.Text += " (Full)";
                 }
-                else if (weight >= 50) // Moderate amount
+                else if (weight >= 50)
                 {
-                    labelWeightValue.ForeColor = Color.FromArgb(243, 156, 18); // Orange
+                    labelWeightValue.ForeColor = Color.FromArgb(243, 156, 18);
                     labelWeightValue.Text += " (Moderate)";
                 }
-                else if (weight >= 10) // Low amount
+                else if (weight >= 10)
                 {
-                    labelWeightValue.ForeColor = Color.FromArgb(231, 76, 60); // Red
+                    labelWeightValue.ForeColor = Color.FromArgb(231, 76, 60);
                     labelWeightValue.Text += " (Low)";
                 }
-                else // Empty or nearly empty
+                else
                 {
-                    labelWeightValue.ForeColor = Color.FromArgb(169, 68, 66); // Dark red
+                    labelWeightValue.ForeColor = Color.FromArgb(169, 68, 66);
                     labelWeightValue.Text += " (Empty)";
                 }
 
-                // Check for weight stability (for feeding detection)
                 CheckWeightStability(weight);
 
             }
@@ -106,10 +92,9 @@ namespace Automatic_Pet_Feeder
 
         private void CheckWeightStability(double weight)
         {
-            // Check if weight has changed significantly (indicating feeding or dispensing)
             double weightDifference = Math.Abs(weight - lastWeightReading);
             
-            if (weightDifference > 5.0) // Significant change (more than 5g)
+            if (weightDifference > 5.0)
             {
                 if (weight > lastWeightReading)
                 {
@@ -122,7 +107,7 @@ namespace Automatic_Pet_Feeder
                 
                 isWeightStable = false;
             }
-            else if (weightDifference < 1.0) // Stable weight
+            else if (weightDifference < 1.0)
             {
                 if (!isWeightStable)
                 {
@@ -136,12 +121,10 @@ namespace Automatic_Pet_Feeder
 
         private void InitializeArduinoLog()
         {
-            // Configure RichTextBox for smooth scrolling
             richTextBoxLog.ScrollBars = RichTextBoxScrollBars.Vertical;
             richTextBoxLog.WordWrap = true;
             richTextBoxLog.DetectUrls = false;
             
-            // Add welcome message
             AppendToLog("=== Arduino Log Monitor Started ===", Color.FromArgb(46, 204, 113));
             AppendToLog("Waiting for Arduino connection...", Color.FromArgb(149, 165, 166));
         }
@@ -150,45 +133,38 @@ namespace Automatic_Pet_Feeder
         {
             try
             {
-                // Ensure we're on the UI thread
                 if (richTextBoxLog.InvokeRequired)
                 {
                     richTextBoxLog.Invoke(new Action<string, Color>(AppendToLog), message, color);
                     return;
                 }
 
-                // Manage log size - remove old lines if too many
                 if (logLineCount >= MAX_LOG_LINES)
                 {
                     var lines = richTextBoxLog.Lines;
-                    var newLines = new string[lines.Length - 100]; // Remove 100 old lines
+                    var newLines = new string[lines.Length - 100];
                     Array.Copy(lines, 100, newLines, 0, newLines.Length);
                     richTextBoxLog.Lines = newLines;
                     logLineCount -= 100;
                 }
 
-                // Add timestamp and message
                 string timeStamp = DateTime.Now.ToString("HH:mm:ss");
                 string formattedMessage = $"[{timeStamp}] {message}";
 
-                // Append text with color
                 richTextBoxLog.SelectionStart = richTextBoxLog.TextLength;
                 richTextBoxLog.SelectionLength = 0;
                 richTextBoxLog.SelectionColor = color;
                 richTextBoxLog.AppendText(formattedMessage + Environment.NewLine);
                 
-                // Auto-scroll to bottom
                 richTextBoxLog.SelectionStart = richTextBoxLog.TextLength;
                 richTextBoxLog.ScrollToCaret();
 
                 logLineCount++;
 
-                // Update status
                 UpdateLogStatus("• Receiving data");
             }
             catch (Exception ex)
             {
-                // Handle any logging errors silently
                 System.Diagnostics.Debug.WriteLine($"Log error: {ex.Message}");
             }
         }
@@ -202,7 +178,7 @@ namespace Automatic_Pet_Feeder
             }
             
             labelLogStatus.Text = status;
-            labelLogStatus.ForeColor = Color.FromArgb(46, 204, 113); // Green
+            labelLogStatus.ForeColor = Color.FromArgb(46, 204, 113);
         }
 
         private void buttonClearLog_Click(object sender, EventArgs e)
@@ -217,7 +193,6 @@ namespace Automatic_Pet_Feeder
         {
             try
             {
-                // Load from application settings
                 if (!string.IsNullOrEmpty(Properties.Settings.Default.NextFeedingTime))
                 {
                     DateTime savedTime;
@@ -234,7 +209,6 @@ namespace Automatic_Pet_Feeder
             }
             catch (Exception ex)
             {
-                // If loading fails, use defaults
                 nextFeedingTime = null;
                 feedingInterval = "Every Day";
             }
@@ -244,7 +218,6 @@ namespace Automatic_Pet_Feeder
         {
             try
             {
-                // Save to application settings
                 if (nextFeedingTime.HasValue)
                 {
                     Properties.Settings.Default.NextFeedingTime = nextFeedingTime.Value.ToString();
@@ -259,19 +232,15 @@ namespace Automatic_Pet_Feeder
             }
             catch (Exception ex)
             {
-                // Ignore save errors for now
             }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            // Update current time display
             labelCurrentTime.Text = DateTime.Now.ToString("h:mm:ss tt");
             
-            // Update countdown if feeding time is set
             UpdateCountdown();
 
-            // Check for Arduino data if connected
             CheckArduinoData();
         }
 
@@ -284,7 +253,6 @@ namespace Automatic_Pet_Feeder
                     string data = _serialPort.ReadExisting();
                     if (!string.IsNullOrEmpty(data))
                     {
-                        // Split data by lines and process each
                         string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                         
                         foreach (string line in lines)
@@ -305,13 +273,58 @@ namespace Automatic_Pet_Feeder
 
         private void ProcessArduinoData(string data)
         {
-            Color messageColor = Color.FromArgb(189, 195, 199); // Default gray
+            Color messageColor = Color.FromArgb(189, 195, 199);
 
-            // Check for weight sensor data
-            if (data.ToLower().Contains("weight:") || data.ToLower().Contains("w:"))
+            if (data.Contains("Food available") || data.Contains("✅"))
             {
-                // Extract weight value from Arduino data
-                // Expected format: "Weight: 123.4" or "W: 123.4"
+                UpdateFoodLevelStatus("Food Available", Color.FromArgb(46, 204, 113));
+                messageColor = Color.FromArgb(46, 204, 113);
+            }
+            else if (data.Contains("Storage low") || data.Contains("Storage empty") || data.Contains("⚠️"))
+            {
+                UpdateFoodLevelStatus("Low/Empty", Color.FromArgb(231, 76, 60));
+                messageColor = Color.FromArgb(231, 76, 60);
+            }
+            else if (data.ToLower().Contains("distance:"))
+            {
+                try
+                {
+                    string[] parts = data.Split(':');
+                    if (parts.Length >= 2)
+                    {
+                        string distanceStr = parts[1].Trim().Replace("cm", "").Replace("centimeters", "").Trim();
+                        if (double.TryParse(distanceStr, out double distance))
+                        {
+                            if (distance <= 10 && distance > 0)
+                            {
+                                UpdateFoodLevelStatus("Food Available", Color.FromArgb(46, 204, 113));
+                                messageColor = Color.FromArgb(46, 204, 113);
+                            }
+                            else if (distance > 10)
+                            {
+                                UpdateFoodLevelStatus("Low/Empty", Color.FromArgb(231, 76, 60));
+                                messageColor = Color.FromArgb(231, 76, 60);
+                            }
+                            else if (distance == 0)
+                            {
+                                UpdateFoodLevelStatus("Sensor Error", Color.FromArgb(243, 156, 18));
+                                messageColor = Color.FromArgb(243, 156, 18);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppendToLog($"Error parsing distance data: {ex.Message}", Color.FromArgb(231, 76, 60));
+                }
+            }
+            else if (data.Contains("Ultrasonic timeout") || data.Contains("no echo"))
+            {
+                UpdateFoodLevelStatus("Sensor Error", Color.FromArgb(243, 156, 18));
+                messageColor = Color.FromArgb(243, 156, 18);
+            }
+            else if (data.ToLower().Contains("weight:") || data.ToLower().Contains("w:"))
+            {
                 try
                 {
                     string[] parts = data.Split(':');
@@ -321,7 +334,7 @@ namespace Automatic_Pet_Feeder
                         if (double.TryParse(weightStr, out double weight))
                         {
                             UpdateWeightDisplay(weight);
-                            messageColor = Color.FromArgb(155, 89, 182); // Purple for weight data
+                            messageColor = Color.FromArgb(155, 89, 182);
                         }
                     }
                 }
@@ -330,29 +343,49 @@ namespace Automatic_Pet_Feeder
                     AppendToLog($"Error parsing weight data: {ex.Message}", Color.FromArgb(231, 76, 60));
                 }
             }
-            // Determine color based on message content
             else if (data.ToLower().Contains("error") || data.ToLower().Contains("fail"))
             {
-                messageColor = Color.FromArgb(231, 76, 60); // Red
+                messageColor = Color.FromArgb(231, 76, 60);
             }
             else if (data.ToLower().Contains("warning") || data.ToLower().Contains("warn"))
             {
-                messageColor = Color.FromArgb(243, 156, 18); // Orange
+                messageColor = Color.FromArgb(243, 156, 18);
             }
             else if (data.ToLower().Contains("success") || data.ToLower().Contains("ok") || data.ToLower().Contains("complete"))
             {
-                messageColor = Color.FromArgb(46, 204, 113); // Green
+                messageColor = Color.FromArgb(46, 204, 113);
             }
             else if (data.ToLower().Contains("feed") || data.ToLower().Contains("dispense"))
             {
-                messageColor = Color.FromArgb(52, 152, 219); // Blue
+                messageColor = Color.FromArgb(52, 152, 219);
             }
             else if (data.ToLower().Contains("sensor") || data.ToLower().Contains("level"))
             {
-                messageColor = Color.FromArgb(155, 89, 182); // Purple
+                messageColor = Color.FromArgb(155, 89, 182);
             }
 
             AppendToLog($"Arduino: {data}", messageColor);
+        }
+
+        private void UpdateFoodLevelStatus(string status, Color color)
+        {
+            try
+            {
+                if (label7.InvokeRequired)
+                {
+                    label7.Invoke(new Action<string, Color>(UpdateFoodLevelStatus), status, color);
+                    return;
+                }
+
+                label7.Text = status;
+                label7.ForeColor = color;
+
+                AppendToLog($"Food level status updated: {status}", color);
+            }
+            catch (Exception ex)
+            {
+                AppendToLog($"Error updating food level status: {ex.Message}", Color.FromArgb(231, 76, 60));
+            }
         }
 
         private void UpdateCountdown()
@@ -363,17 +396,14 @@ namespace Automatic_Pet_Feeder
                 
                 if (timeLeft.TotalSeconds <= 0)
                 {
-                    // Time to feed! Calculate next feeding time
                     CalculateNextFeedingTime();
                     labelCountdown.Text = "FEEDING TIME!";
-                    labelCountdown.ForeColor = Color.FromArgb(46, 204, 113); // Green
+                    labelCountdown.ForeColor = Color.FromArgb(46, 204, 113);
                     
-                    // Log feeding event
                     AppendToLog("Scheduled feeding time reached!", Color.FromArgb(46, 204, 113));
                     return;
                 }
                 
-                // Display countdown
                 if (timeLeft.TotalDays >= 1)
                 {
                     labelCountdown.Text = string.Format("{0}d {1:D2}h {2:D2}m {3:D2}s", 
@@ -390,18 +420,17 @@ namespace Automatic_Pet_Feeder
                         timeLeft.Minutes, timeLeft.Seconds);
                 }
                 
-                // Change color based on time left
                 if (timeLeft.TotalMinutes <= 5)
-                    labelCountdown.ForeColor = Color.FromArgb(231, 76, 60); // Red
+                    labelCountdown.ForeColor = Color.FromArgb(231, 76, 60);
                 else if (timeLeft.TotalMinutes <= 30)
-                    labelCountdown.ForeColor = Color.FromArgb(243, 156, 18); // Orange
+                    labelCountdown.ForeColor = Color.FromArgb(243, 156, 18);
                 else
-                    labelCountdown.ForeColor = Color.FromArgb(52, 152, 219); // Blue
+                    labelCountdown.ForeColor = Color.FromArgb(52, 152, 219);
             }
             else
             {
                 labelCountdown.Text = "No schedule set yet";
-                labelCountdown.ForeColor = Color.FromArgb(149, 165, 166); // Gray
+                labelCountdown.ForeColor = Color.FromArgb(149, 165, 166);
             }
         }
 
@@ -447,26 +476,22 @@ namespace Automatic_Pet_Feeder
             }
         }
 
-        // Method to be called from Form2 when feeding schedule is saved
         public void UpdateFeedingSchedule(DateTime feedingTime, string interval)
         {
             nextFeedingTime = feedingTime;
             feedingInterval = interval;
-            SaveFeedingSchedule(); // Save the new schedule
+            SaveFeedingSchedule();
             UpdateCountdown();
             
-            // Log schedule update
             AppendToLog($"Feeding schedule updated: {feedingTime:yyyy-MM-dd HH:mm} ({interval})", Color.FromArgb(52, 152, 219));
         }
 
-        // Method to get current feeding schedule for Form2
         public void GetCurrentFeedingSchedule(out DateTime? currentNextFeedingTime, out string currentInterval)
         {
             currentNextFeedingTime = nextFeedingTime;
             currentInterval = feedingInterval;
         }
 
-        // Method to clear the feeding schedule
         public void ClearFeedingSchedule()
         {
             nextFeedingTime = null;
@@ -474,7 +499,6 @@ namespace Automatic_Pet_Feeder
             SaveFeedingSchedule();
             UpdateCountdown();
             
-            // Log schedule clear
             AppendToLog("Feeding schedule cleared", Color.FromArgb(243, 156, 18));
         }
 
@@ -485,29 +509,24 @@ namespace Automatic_Pet_Feeder
 
         private void button2_Click(object sender, EventArgs e)
         {
-            // Buksan ang bagong form (Form2)
             Form2 form2 = new Form2();
-            form2.SetMainForm(this); // Pass reference to this form
-            form2.Show(); // or form2.ShowDialog() para modal
+            form2.SetMainForm(this);
+            form2.Show();
             
-            // Log form opening
             AppendToLog("Set Feeding Time form opened", Color.FromArgb(149, 165, 166));
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            // Buksan ang Form3 para sa manual dispense
             Form3 form3 = new Form3();
-            form3.Show(); // use ShowDialog() if you want it modal
+            form3.Show();
             
-            // Log form opening
             AppendToLog("Manual Dispense form opened", Color.FromArgb(149, 165, 166));
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // Default COM3 at 9600
-            var portName = "COM3";
+            var portName = "COM8";
             var baudRate = 9600;
 
             try
@@ -539,7 +558,6 @@ namespace Automatic_Pet_Feeder
                         NewLine = "\n"
                     };
                     
-                    // Add event handler for data received
                     _serialPort.DataReceived += SerialPort_DataReceived;
                 }
 
@@ -549,10 +567,8 @@ namespace Automatic_Pet_Feeder
 
                     try
                     {
-                        // Bigyan ng konting oras ang device to reset/prepare
                         System.Threading.Thread.Sleep(200);
 
-                        // Send 'PING' — Arduino should reply (e.g. 'PONG')
                         _serialPort.DiscardInBuffer();
                         _serialPort.WriteLine("PING");
                         AppendToLog("Sending handshake (PING)...", Color.FromArgb(52, 152, 219));
@@ -564,7 +580,6 @@ namespace Automatic_Pet_Feeder
                         }
                         catch (TimeoutException)
                         {
-                            // Walang reply sa loob ng timeout
                         }
 
                         if (!string.IsNullOrEmpty(response))
@@ -573,13 +588,13 @@ namespace Automatic_Pet_Feeder
                             AppendToLog($"Arduino connected successfully! Response: {response.Trim()}", Color.FromArgb(46, 204, 113));
                             UpdateLogStatus("• Connected & listening");
                             
-                            // Update weight monitor status
                             labelWeightValue.Text = "Waiting for data...";
-                            labelWeightValue.ForeColor = Color.FromArgb(52, 152, 219); // Blue
+                            labelWeightValue.ForeColor = Color.FromArgb(52, 152, 219);
+                            
+                            UpdateFoodLevelStatus("Waiting for data...", Color.FromArgb(52, 152, 219));
                         }
                         else
                         {
-                            // Walang reply -> isara ang port, walang device na sumagot
                             try
                             {
                                 _serialPort.Close();
@@ -594,7 +609,6 @@ namespace Automatic_Pet_Feeder
                     }
                     catch (Exception ex)
                     {
-                        // Kung may error sa handshake, i-close ang port
                         try { if (_serialPort.IsOpen) _serialPort.Close(); } catch { }
                         label3.Text = "Handshake error: " + ex.Message;
                         AppendToLog($"Handshake error: {ex.Message}", Color.FromArgb(231, 76, 60));
@@ -633,8 +647,6 @@ namespace Automatic_Pet_Feeder
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            // This event will be called when data is received from Arduino
-            // The actual data reading is handled in CheckArduinoData() called by timer
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -649,7 +661,6 @@ namespace Automatic_Pet_Feeder
 
         private void button5_Click(object sender, EventArgs e)
         {
-            // Disconnect button — disconnect sa port
             try
             {
                 if (_serialPort != null)
@@ -661,9 +672,10 @@ namespace Automatic_Pet_Feeder
                         AppendToLog($"Disconnected from {_serialPort.PortName}", Color.FromArgb(243, 156, 18));
                         UpdateLogStatus("• Disconnected");
                         
-                        // Reset weight monitor
                         labelWeightValue.Text = "Not Connected";
-                        labelWeightValue.ForeColor = Color.FromArgb(255, 165, 79); // Orange
+                        labelWeightValue.ForeColor = Color.FromArgb(255, 165, 79);
+                        
+                        UpdateFoodLevelStatus("Not Connected", Color.FromArgb(255, 165, 79));
                     }
                     else
                     {
@@ -689,7 +701,6 @@ namespace Automatic_Pet_Feeder
             }
         }
 
-        // Siguraduhing nakasara ang port kapag nagsara ang form
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             try
@@ -703,10 +714,10 @@ namespace Automatic_Pet_Feeder
                 }
 
                 label3.Text = "Disconnected";
+                UpdateFoodLevelStatus("Disconnected", Color.FromArgb(149, 165, 166));
             }
             catch (Exception ex)
             {
-                // Show error kung may problema sa closing
                 label3.Text = "Error closing port: " + ex.Message;
             }
 
