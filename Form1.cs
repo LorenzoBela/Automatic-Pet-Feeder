@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Collections.Concurrent;
+using System.Threading;
+using Timer = System.Threading.Timer;
 
 namespace Automatic_Pet_Feeder
 {
@@ -25,6 +28,31 @@ namespace Automatic_Pet_Feeder
         private double lastWeightReading = 0.0;
         private bool isWeightStable = false;
 
+        // Performance optimization for logging
+        private readonly ConcurrentQueue<LogEntry> _logQueue = new ConcurrentQueue<LogEntry>();
+        private readonly Timer _logProcessingTimer;
+        private readonly object _logLock = new object();
+        private bool _isProcessingLogs = false;
+        private DateTime _lastLogUpdate = DateTime.MinValue;
+        private readonly StringBuilder _logBuffer = new StringBuilder(10000);
+        
+        // Rate limiting for frequent messages
+        private readonly Dictionary<string, DateTime> _lastMessageTimes = new Dictionary<string, DateTime>();
+        private readonly Dictionary<string, int> _messageCountSinceLastLog = new Dictionary<string, int>();
+        private const int MESSAGE_THROTTLE_MS = 100; // Minimum time between similar messages
+        private const int MAX_DUPLICATE_SUPPRESS = 10; // Max duplicates to suppress before showing summary
+
+        private DateTime _lastLogStatusUpdate = DateTime.MinValue;
+
+        private struct LogEntry
+        {
+            public string Message;
+            public Color Color;
+            public DateTime Timestamp;
+            public bool IsThrottled;
+            public int SuppressedCount;
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -39,6 +67,9 @@ namespace Automatic_Pet_Feeder
             InitializeWeightMonitor();
 
             buttonClearLog.Click += buttonClearLog_Click;
+
+            // Initialize optimized logging timer
+            _logProcessingTimer = new Timer(ProcessLogQueue, null, 50, 50); // Process logs every 50ms
         }
 
         private void InitializeWeightMonitor()
@@ -131,46 +162,195 @@ namespace Automatic_Pet_Feeder
 
         private void AppendToLog(string message, Color color)
         {
-            try
+            // Add to queue for batch processing instead of immediate UI update
+            _logQueue.Enqueue(new LogEntry
             {
-                if (richTextBoxLog.InvokeRequired)
+                Message = message,
+                Color = color,
+                Timestamp = DateTime.Now,
+                IsThrottled = false,
+                SuppressedCount = 0
+            });
+        }
+
+        private void AppendToLogThrottled(string message, Color color, string messageKey)
+        {
+            DateTime now = DateTime.Now;
+            
+            // Check if we should throttle this message
+            if (_lastMessageTimes.ContainsKey(messageKey))
+            {
+                var timeSinceLastMessage = (now - _lastMessageTimes[messageKey]).TotalMilliseconds;
+                
+                if (timeSinceLastMessage < MESSAGE_THROTTLE_MS)
                 {
-                    richTextBoxLog.Invoke(new Action<string, Color>(AppendToLog), message, color);
+                    // Increment suppressed count
+                    if (_messageCountSinceLastLog.ContainsKey(messageKey))
+                        _messageCountSinceLastLog[messageKey]++;
+                    else
+                        _messageCountSinceLastLog[messageKey] = 1;
+                    
+                    // Don't log if we haven't reached the threshold yet
+                    if (_messageCountSinceLastLog[messageKey] < MAX_DUPLICATE_SUPPRESS)
+                        return;
+                    
+                    // Log a summary message
+                    var suppressedCount = _messageCountSinceLastLog[messageKey];
+                    _logQueue.Enqueue(new LogEntry
+                    {
+                        Message = $"{message} (+{suppressedCount} similar messages suppressed)",
+                        Color = Color.FromArgb(149, 165, 166),
+                        Timestamp = now,
+                        IsThrottled = true,
+                        SuppressedCount = suppressedCount
+                    });
+                    
+                    _messageCountSinceLastLog[messageKey] = 0;
+                    _lastMessageTimes[messageKey] = now;
                     return;
                 }
+            }
+            
+            // Normal message - update tracking and log
+            _lastMessageTimes[messageKey] = now;
+            _messageCountSinceLastLog[messageKey] = 0;
+            
+            _logQueue.Enqueue(new LogEntry
+            {
+                Message = message,
+                Color = color,
+                Timestamp = now,
+                IsThrottled = false,
+                SuppressedCount = 0
+            });
+        }
 
-                if (logLineCount >= MAX_LOG_LINES)
+        private void ProcessLogQueue(object state)
+        {
+            // Prevent multiple timer executions from overlapping
+            if (_isProcessingLogs) return;
+            
+            lock (_logLock)
+            {
+                if (_isProcessingLogs) return;
+                _isProcessingLogs = true;
+            }
+
+            try
+            {
+                // Only update UI if we're not overwhelmed and some time has passed
+                var now = DateTime.Now;
+                if ((now - _lastLogUpdate).TotalMilliseconds < 50 && _logQueue.Count < 50)
+                    return;
+
+                var entriesToProcess = new List<LogEntry>();
+                var maxEntries = Math.Min(20, _logQueue.Count); // Process max 20 entries at once
+                
+                for (int i = 0; i < maxEntries; i++)
                 {
-                    var lines = richTextBoxLog.Lines;
-                    var newLines = new string[lines.Length - 100];
-                    Array.Copy(lines, 100, newLines, 0, newLines.Length);
-                    richTextBoxLog.Lines = newLines;
-                    logLineCount -= 100;
+                    if (_logQueue.TryDequeue(out LogEntry entry))
+                        entriesToProcess.Add(entry);
+                    else
+                        break;
                 }
 
-                string timeStamp = DateTime.Now.ToString("HH:mm:ss");
-                string formattedMessage = $"[{timeStamp}] {message}";
+                if (entriesToProcess.Count > 0)
+                {
+                    // Update UI in one batch operation
+                    if (richTextBoxLog.InvokeRequired)
+                    {
+                        richTextBoxLog.Invoke(new Action<List<LogEntry>>(UpdateLogUIBatch), entriesToProcess);
+                    }
+                    else
+                    {
+                        UpdateLogUIBatch(entriesToProcess);
+                    }
+                    
+                    _lastLogUpdate = now;
+                }
+            }
+            finally
+            {
+                _isProcessingLogs = false;
+            }
+        }
 
+        private void UpdateLogUIBatch(List<LogEntry> entries)
+        {
+            try
+            {
+                // Suspend layout to improve performance
+                richTextBoxLog.SuspendLayout();
+                
+                // Check if we need to trim the log
+                if (logLineCount + entries.Count >= MAX_LOG_LINES)
+                {
+                    var lines = richTextBoxLog.Lines;
+                    var removeCount = Math.Min(200, lines.Length / 2); // Remove more lines at once
+                    var newLines = new string[lines.Length - removeCount];
+                    Array.Copy(lines, removeCount, newLines, 0, newLines.Length);
+                    richTextBoxLog.Lines = newLines;
+                    logLineCount -= removeCount;
+                }
+
+                // Build all messages in a buffer first
+                _logBuffer.Clear();
+                foreach (var entry in entries)
+                {
+                    string timeStamp = entry.Timestamp.ToString("HH:mm:ss");
+                    string formattedMessage = $"[{timeStamp}] {entry.Message}";
+                    _logBuffer.AppendLine(formattedMessage);
+                }
+
+                // Append all text at once
+                int startPosition = richTextBoxLog.TextLength;
+                richTextBoxLog.AppendText(_logBuffer.ToString());
+
+                // Apply colors in batches
+                int currentPosition = startPosition;
+                foreach (var entry in entries)
+                {
+                    string timeStamp = entry.Timestamp.ToString("HH:mm:ss");
+                    string formattedMessage = $"[{timeStamp}] {entry.Message}";
+                    int messageLength = formattedMessage.Length + Environment.NewLine.Length;
+                    
+                    richTextBoxLog.Select(currentPosition, messageLength - Environment.NewLine.Length);
+                    richTextBoxLog.SelectionColor = entry.Color;
+                    currentPosition += messageLength;
+                }
+
+                // Reset selection and scroll to bottom
                 richTextBoxLog.SelectionStart = richTextBoxLog.TextLength;
                 richTextBoxLog.SelectionLength = 0;
-                richTextBoxLog.SelectionColor = color;
-                richTextBoxLog.AppendText(formattedMessage + Environment.NewLine);
-                
-                richTextBoxLog.SelectionStart = richTextBoxLog.TextLength;
                 richTextBoxLog.ScrollToCaret();
 
-                logLineCount++;
+                logLineCount += entries.Count;
 
-                UpdateLogStatus("• Receiving data");
+                // Update status less frequently
+                if (entries.Count > 0)
+                {
+                    UpdateLogStatus("• Receiving data");
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Log error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Log batch update error: {ex.Message}");
+            }
+            finally
+            {
+                richTextBoxLog.ResumeLayout();
             }
         }
 
         private void UpdateLogStatus(string status)
         {
+            // Only update status every 500ms to reduce UI updates
+            var now = DateTime.Now;
+            if ((now - _lastLogStatusUpdate).TotalMilliseconds < 500)
+                return;
+                
+            _lastLogStatusUpdate = now;
+            
             if (labelLogStatus.InvokeRequired)
             {
                 labelLogStatus.Invoke(new Action<string>(UpdateLogStatus), status);
@@ -250,18 +430,21 @@ namespace Automatic_Pet_Feeder
             {
                 if (_serialPort != null && _serialPort.IsOpen && _serialPort.BytesToRead > 0)
                 {
+                    // Read larger chunks of data at once
+                    int bytesToRead = _serialPort.BytesToRead;
+                    
+                    // Prevent reading too much data at once to avoid UI freezing
+                    if (bytesToRead > 4096)
+                    {
+                        // If there's too much data, read in chunks and process
+                        bytesToRead = 2048;
+                    }
+                    
                     string data = _serialPort.ReadExisting();
                     if (!string.IsNullOrEmpty(data))
                     {
-                        string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                        
-                        foreach (string line in lines)
-                        {
-                            if (!string.IsNullOrWhiteSpace(line))
-                            {
-                                ProcessArduinoData(line.Trim());
-                            }
-                        }
+                        // Process data more efficiently
+                        ProcessArduinoDataBatch(data);
                     }
                 }
             }
@@ -271,19 +454,48 @@ namespace Automatic_Pet_Feeder
             }
         }
 
+        private void ProcessArduinoDataBatch(string data)
+        {
+            // Split data into lines more efficiently
+            string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            // If too many lines, process only the most recent ones to prevent UI lag
+            if (lines.Length > 20)
+            {
+                // Log a summary of skipped data
+                int skippedLines = lines.Length - 15;
+                AppendToLog($"High data rate detected: Processing latest 15 lines, skipped {skippedLines} older entries", 
+                           Color.FromArgb(243, 156, 18));
+                
+                // Process only the last 15 lines
+                lines = lines.Skip(lines.Length - 15).ToArray();
+            }
+            
+            foreach (string line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    ProcessArduinoData(line.Trim());
+                }
+            }
+        }
+
         private void ProcessArduinoData(string data)
         {
             Color messageColor = Color.FromArgb(189, 195, 199);
+            string messageKey = "general"; // Default key for throttling
 
             if (data.Contains("Food available") || data.Contains("✅"))
             {
                 UpdateFoodLevelStatus("Food Available", Color.FromArgb(46, 204, 113));
                 messageColor = Color.FromArgb(46, 204, 113);
+                messageKey = "food_available";
             }
             else if (data.Contains("Storage low") || data.Contains("Storage empty") || data.Contains("⚠️"))
             {
                 UpdateFoodLevelStatus("Low/Empty", Color.FromArgb(231, 76, 60));
                 messageColor = Color.FromArgb(231, 76, 60);
+                messageKey = "storage_low";
             }
             else if (data.ToLower().Contains("distance:"))
             {
@@ -312,16 +524,19 @@ namespace Automatic_Pet_Feeder
                             }
                         }
                     }
+                    messageKey = "distance_reading";
                 }
                 catch (Exception ex)
                 {
                     AppendToLog($"Error parsing distance data: {ex.Message}", Color.FromArgb(231, 76, 60));
+                    return;
                 }
             }
             else if (data.Contains("Ultrasonic timeout") || data.Contains("no echo"))
             {
                 UpdateFoodLevelStatus("Sensor Error", Color.FromArgb(243, 156, 18));
                 messageColor = Color.FromArgb(243, 156, 18);
+                messageKey = "sensor_error";
             }
             else if (data.ToLower().Contains("weight:") || data.ToLower().Contains("w:"))
             {
@@ -337,34 +552,50 @@ namespace Automatic_Pet_Feeder
                             messageColor = Color.FromArgb(155, 89, 182);
                         }
                     }
+                    messageKey = "weight_reading";
                 }
                 catch (Exception ex)
                 {
                     AppendToLog($"Error parsing weight data: {ex.Message}", Color.FromArgb(231, 76, 60));
+                    return;
                 }
             }
             else if (data.ToLower().Contains("error") || data.ToLower().Contains("fail"))
             {
                 messageColor = Color.FromArgb(231, 76, 60);
+                messageKey = "error";
             }
             else if (data.ToLower().Contains("warning") || data.ToLower().Contains("warn"))
             {
                 messageColor = Color.FromArgb(243, 156, 18);
+                messageKey = "warning";
             }
             else if (data.ToLower().Contains("success") || data.ToLower().Contains("ok") || data.ToLower().Contains("complete"))
             {
                 messageColor = Color.FromArgb(46, 204, 113);
+                messageKey = "success";
             }
             else if (data.ToLower().Contains("feed") || data.ToLower().Contains("dispense"))
             {
                 messageColor = Color.FromArgb(52, 152, 219);
+                messageKey = "feed_dispense";
             }
             else if (data.ToLower().Contains("sensor") || data.ToLower().Contains("level"))
             {
                 messageColor = Color.FromArgb(155, 89, 182);
+                messageKey = "sensor";
             }
 
-            AppendToLog($"Arduino: {data}", messageColor);
+            // Use throttled logging for frequent sensor readings
+            if (messageKey == "distance_reading" || messageKey == "weight_reading" || messageKey == "sensor")
+            {
+                AppendToLogThrottled($"Arduino: {data}", messageColor, messageKey);
+            }
+            else
+            {
+                // Use normal logging for important messages
+                AppendToLog($"Arduino: {data}", messageColor);
+            }
         }
 
         private void UpdateFoodLevelStatus(string status, Color color)
@@ -377,10 +608,14 @@ namespace Automatic_Pet_Feeder
                     return;
                 }
 
-                label7.Text = status;
-                label7.ForeColor = color;
+                // Only update and log if the status actually changed
+                if (label7.Text != status)
+                {
+                    label7.Text = status;
+                    label7.ForeColor = color;
 
-                AppendToLog($"Food level status updated: {status}", color);
+                    AppendToLog($"Food level status updated: {status}", color);
+                }
             }
             catch (Exception ex)
             {
@@ -396,36 +631,51 @@ namespace Automatic_Pet_Feeder
                 
                 if (timeLeft.TotalSeconds <= 0)
                 {
-                    CalculateNextFeedingTime();
-                    labelCountdown.Text = "FEEDING TIME!";
-                    labelCountdown.ForeColor = Color.FromArgb(46, 204, 113);
+                    // Skip all past feeding times and jump to the next future feeding
+                    bool wasRecentMiss = timeLeft.TotalMinutes >= -5; // Within last 5 minutes
+                    SkipToNextFutureFeeding();
                     
-                    AppendToLog("Scheduled feeding time reached!", Color.FromArgb(46, 204, 113));
-                    return;
+                    // Only show "FEEDING TIME!" if the missed time was recent
+                    if (wasRecentMiss)
+                    {
+                        labelCountdown.Text = "FEEDING TIME!";
+                        labelCountdown.ForeColor = Color.FromArgb(46, 204, 113);
+                        AppendToLog("Scheduled feeding time reached!", Color.FromArgb(46, 204, 113));
+                    }
+                    else
+                    {
+                        AppendToLog($"Skipped missed feeding times. Next feeding scheduled for {nextFeedingTime.Value:MMM dd, h:mm tt}", Color.FromArgb(243, 156, 18));
+                        // Recalculate timeLeft for display
+                        timeLeft = nextFeedingTime.Value - DateTime.Now;
+                    }
                 }
                 
-                if (timeLeft.TotalDays >= 1)
+                // Display countdown if we have a future feeding time
+                if (timeLeft.TotalSeconds > 0)
                 {
-                    labelCountdown.Text = string.Format("{0}d {1:D2}h {2:D2}m {3:D2}s", 
-                        (int)timeLeft.TotalDays, timeLeft.Hours, timeLeft.Minutes, timeLeft.Seconds);
+                    if (timeLeft.TotalDays >= 1)
+                    {
+                        labelCountdown.Text = string.Format("{0}d {1:D2}h {2:D2}m {3:D2}s", 
+                            (int)timeLeft.TotalDays, timeLeft.Hours, timeLeft.Minutes, timeLeft.Seconds);
+                    }
+                    else if (timeLeft.TotalHours >= 1)
+                    {
+                        labelCountdown.Text = string.Format("{0:D2}h {1:D2}m {2:D2}s", 
+                            timeLeft.Hours, timeLeft.Minutes, timeLeft.Seconds);
+                    }
+                    else
+                    {
+                        labelCountdown.Text = string.Format("{0:D2}m {1:D2}s", 
+                            timeLeft.Minutes, timeLeft.Seconds);
+                    }
+                    
+                    if (timeLeft.TotalMinutes <= 5)
+                        labelCountdown.ForeColor = Color.FromArgb(231, 76, 60);
+                    else if (timeLeft.TotalMinutes <= 30)
+                        labelCountdown.ForeColor = Color.FromArgb(243, 156, 18);
+                    else
+                        labelCountdown.ForeColor = Color.FromArgb(52, 152, 219);
                 }
-                else if (timeLeft.TotalHours >= 1)
-                {
-                    labelCountdown.Text = string.Format("{0:D2}h {1:D2}m {2:D2}s", 
-                        timeLeft.Hours, timeLeft.Minutes, timeLeft.Seconds);
-                }
-                else
-                {
-                    labelCountdown.Text = string.Format("{0:D2}m {1:D2}s", 
-                        timeLeft.Minutes, timeLeft.Seconds);
-                }
-                
-                if (timeLeft.TotalMinutes <= 5)
-                    labelCountdown.ForeColor = Color.FromArgb(231, 76, 60);
-                else if (timeLeft.TotalMinutes <= 30)
-                    labelCountdown.ForeColor = Color.FromArgb(243, 156, 18);
-                else
-                    labelCountdown.ForeColor = Color.FromArgb(52, 152, 219);
             }
             else
             {
@@ -434,46 +684,92 @@ namespace Automatic_Pet_Feeder
             }
         }
 
-        private void CalculateNextFeedingTime()
+        private void SkipToNextFutureFeeding()
         {
-            if (nextFeedingTime.HasValue)
+            if (!nextFeedingTime.HasValue) return;
+            
+            DateTime now = DateTime.Now;
+            DateTime originalTime = nextFeedingTime.Value;
+            
+            // If the scheduled time is in the future, no need to skip
+            if (nextFeedingTime.Value > now) return;
+            
+            // Calculate how many intervals have passed and skip to next future feeding
+            switch (feedingInterval)
             {
-                DateTime baseTime = nextFeedingTime.Value;
-                
-                switch (feedingInterval)
-                {
-                    case "Every Day":
-                        nextFeedingTime = baseTime.AddDays(1);
-                        break;
-                    case "Every 2 Hours":
-                        nextFeedingTime = baseTime.AddHours(2);
-                        break;
-                    case "Every 3 Hours":
-                        nextFeedingTime = baseTime.AddHours(3);
-                        break;
-                    case "Every 4 Hours":
-                        nextFeedingTime = baseTime.AddHours(4);
-                        break;
-                    case "Every 6 Hours":
-                        nextFeedingTime = baseTime.AddHours(6);
-                        break;
-                    case "Every 8 Hours":
-                        nextFeedingTime = baseTime.AddHours(8);
-                        break;
-                    case "Every 12 Hours":
-                        nextFeedingTime = baseTime.AddHours(12);
-                        break;
-                    case "Twice a Day":
-                        nextFeedingTime = baseTime.AddHours(12);
-                        break;
-                    case "Three Times a Day":
-                        nextFeedingTime = baseTime.AddHours(8);
-                        break;
-                    default:
-                        nextFeedingTime = baseTime.AddDays(1);
-                        break;
-                }
+                case "Every Day":
+                    int daysToAdd = (int)Math.Ceiling((now - originalTime).TotalDays);
+                    nextFeedingTime = originalTime.AddDays(daysToAdd);
+                    break;
+                    
+                case "Every 2 Hours":
+                    int intervals2h = (int)Math.Ceiling((now - originalTime).TotalHours / 2);
+                    nextFeedingTime = originalTime.AddHours(intervals2h * 2);
+                    break;
+                    
+                case "Every 3 Hours":
+                    int intervals3h = (int)Math.Ceiling((now - originalTime).TotalHours / 3);
+                    nextFeedingTime = originalTime.AddHours(intervals3h * 3);
+                    break;
+                    
+                case "Every 4 Hours":
+                    int intervals4h = (int)Math.Ceiling((now - originalTime).TotalHours / 4);
+                    nextFeedingTime = originalTime.AddHours(intervals4h * 4);
+                    break;
+                    
+                case "Every 6 Hours":
+                    int intervals6h = (int)Math.Ceiling((now - originalTime).TotalHours / 6);
+                    nextFeedingTime = originalTime.AddHours(intervals6h * 6);
+                    break;
+                    
+                case "Every 8 Hours":
+                    int intervals8h = (int)Math.Ceiling((now - originalTime).TotalHours / 8);
+                    nextFeedingTime = originalTime.AddHours(intervals8h * 8);
+                    break;
+                    
+                case "Every 12 Hours":
+                    int intervals12h = (int)Math.Ceiling((now - originalTime).TotalHours / 12);
+                    nextFeedingTime = originalTime.AddHours(intervals12h * 12);
+                    break;
+                    
+                case "Twice a Day":
+                    // Find next occurrence of the feeding time (12 hours apart)
+                    DateTime baseFeedingTime = new DateTime(now.Year, now.Month, now.Day, originalTime.Hour, originalTime.Minute, 0);
+                    DateTime secondFeeding = baseFeedingTime.AddHours(12);
+                    
+                    if (baseFeedingTime > now)
+                        nextFeedingTime = baseFeedingTime;
+                    else if (secondFeeding > now)
+                        nextFeedingTime = secondFeeding;
+                    else
+                        nextFeedingTime = baseFeedingTime.AddDays(1);
+                    break;
+                    
+                case "Three Times a Day":
+                    // Find next occurrence of the feeding time (8 hours apart)
+                    DateTime baseFeeding = new DateTime(now.Year, now.Month, now.Day, originalTime.Hour, originalTime.Minute, 0);
+                    DateTime secondFeed = baseFeeding.AddHours(8);
+                    DateTime thirdFeed = baseFeeding.AddHours(16);
+                    
+                    if (baseFeeding > now)
+                        nextFeedingTime = baseFeeding;
+                    else if (secondFeed > now)
+                        nextFeedingTime = secondFeed;
+                    else if (thirdFeed > now)
+                        nextFeedingTime = thirdFeed;
+                    else
+                        nextFeedingTime = baseFeeding.AddDays(1);
+                    break;
+                    
+                default:
+                    // Default to daily if unknown interval
+                    int defaultDaysToAdd = (int)Math.Ceiling((now - originalTime).TotalDays);
+                    nextFeedingTime = originalTime.AddDays(defaultDaysToAdd);
+                    break;
             }
+            
+            // Save the updated schedule
+            SaveFeedingSchedule();
         }
 
         public void UpdateFeedingSchedule(DateTime feedingTime, string interval)
@@ -705,6 +1001,9 @@ namespace Automatic_Pet_Feeder
         {
             try
             {
+                // Dispose of the log processing timer
+                _logProcessingTimer?.Dispose();
+                
                 if (_serialPort != null && _serialPort.IsOpen)
                 {
                     AppendToLog("Application closing, disconnecting Arduino...", Color.FromArgb(243, 156, 18));
