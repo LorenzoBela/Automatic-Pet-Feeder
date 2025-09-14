@@ -633,16 +633,21 @@ namespace Automatic_Pet_Feeder
                 {
                     // Skip all past feeding times and jump to the next future feeding
                     bool wasRecentMiss = timeLeft.TotalMinutes >= -5; // Within last 5 minutes
-                    SkipToNextFutureFeeding();
                     
-                    // Only show "FEEDING TIME!" if the missed time was recent
+                    // Only show "FEEDING TIME!" and trigger feeding if the missed time was recent
                     if (wasRecentMiss)
                     {
                         labelCountdown.Text = "FEEDING TIME!";
                         labelCountdown.ForeColor = Color.FromArgb(46, 204, 113);
                         AppendToLog("Scheduled feeding time reached!", Color.FromArgb(46, 204, 113));
+                        
+                        // Trigger automatic feeding using the configured duration
+                        TriggerAutomaticFeeding();
                     }
-                    else
+                    
+                    SkipToNextFutureFeeding();
+                    
+                    if (!wasRecentMiss)
                     {
                         AppendToLog($"Skipped missed feeding times. Next feeding scheduled for {nextFeedingTime.Value:MMM dd, h:mm tt}", Color.FromArgb(243, 156, 18));
                         // Recalculate timeLeft for display
@@ -681,6 +686,42 @@ namespace Automatic_Pet_Feeder
             {
                 labelCountdown.Text = "No schedule set yet";
                 labelCountdown.ForeColor = Color.FromArgb(149, 165, 166);
+            }
+        }
+
+        private void TriggerAutomaticFeeding(int? customSeconds = null)
+        {
+            try
+            {
+                // Check if Arduino is connected
+                if (!IsArduinoConnected())
+                {
+                    AppendToLog("Cannot trigger automatic feeding: Arduino not connected", Color.FromArgb(231, 76, 60));
+                    return;
+                }
+
+                // Use custom seconds if provided, otherwise use setting
+                int seconds = customSeconds ?? Properties.Settings.Default.AutoFeedDuration;
+                
+                // Ensure reasonable bounds (1-30 seconds)
+                seconds = Math.Max(1, Math.Min(30, seconds));
+
+                // Send dispense command to Arduino
+                string command = $"FEED_{seconds}";
+                bool commandSent = SendArduinoCommand(command);
+                
+                if (commandSent)
+                {
+                    AppendToLog($"Automatic feeding triggered: {seconds} seconds", Color.FromArgb(46, 204, 113));
+                }
+                else
+                {
+                    AppendToLog("Failed to send automatic feeding command to Arduino", Color.FromArgb(231, 76, 60));
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendToLog($"Error during automatic feeding: {ex.Message}", Color.FromArgb(231, 76, 60));
             }
         }
 
@@ -815,6 +856,7 @@ namespace Automatic_Pet_Feeder
         private void button3_Click(object sender, EventArgs e)
         {
             Form3 form3 = new Form3();
+            form3.SetMainForm(this);
             form3.Show();
             
             AppendToLog("Manual Dispense form opened", Color.FromArgb(149, 165, 166));
@@ -822,7 +864,9 @@ namespace Automatic_Pet_Feeder
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var portName = "COM8";
+            // Try to auto-detect Arduino port with COM8 as first priority
+            string[] possiblePorts = { "COM8", "COM3", "COM4", "COM5", "COM6", "COM7", "COM9" };
+            string portName = null;
             var baudRate = 9600;
 
             try
@@ -831,26 +875,45 @@ namespace Automatic_Pet_Feeder
                 AppendToLog("Attempting to connect to Arduino...", Color.FromArgb(243, 156, 18));
                 
                 var ports = SerialPort.GetPortNames();
+                AppendToLog($"Available ports: {string.Join(", ", ports)}", Color.FromArgb(149, 165, 166));
 
-                if (!ports.Contains(portName))
+                // First try to find a port that's in our possible ports list (COM8 first)
+                foreach (string testPort in possiblePorts)
                 {
-                    label3.Text = "Port " + portName + " not found. Available: " + string.Join(", ", ports);
-                    AppendToLog($"Port {portName} not found. Available ports: {(ports.Length == 0 ? "(none)" : string.Join(", ", ports))}", Color.FromArgb(231, 76, 60));
-                    MessageBox.Show("Port " + portName + " not found. Available ports: " + (ports.Length == 0 ? "(none)" : string.Join(", ", ports)), "Port Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    UpdateLogStatus("• Connection failed");
+                    if (ports.Contains(testPort))
+                    {
+                        portName = testPort;
+                        AppendToLog($"Found preferred port: {portName}", Color.FromArgb(52, 152, 219));
+                        break;
+                    }
+                }
+
+                // If no common port found, use the first available port
+                if (portName == null && ports.Length > 0)
+                {
+                    portName = ports[0];
+                    AppendToLog($"Using first available port: {portName}", Color.FromArgb(243, 156, 18));
+                }
+
+                if (portName == null)
+                {
+                    label3.Text = "No COM ports found";
+                    AppendToLog("No COM ports available", Color.FromArgb(231, 76, 60));
+                    MessageBox.Show("No COM ports found. Please check if Arduino is connected.", "No Ports Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    UpdateLogStatus("• No ports found");
                     return;
                 }
 
                 label3.Text = "Connecting to " + portName + "...";
-                AppendToLog($"Connecting to {portName} at {baudRate} baud...", Color.FromArgb(52, 152, 219));
+                AppendToLog($"Trying to connect to {portName} at {baudRate} baud...", Color.FromArgb(52, 152, 219));
 
                 if (_serialPort == null)
                 {
                     _serialPort = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One)
                     {
                         Handshake = Handshake.None,
-                        ReadTimeout = 1000,
-                        WriteTimeout = 1000,
+                        ReadTimeout = 2000,  // Increased timeout
+                        WriteTimeout = 2000,
                         NewLine = "\n"
                     };
                     
@@ -863,7 +926,7 @@ namespace Automatic_Pet_Feeder
 
                     try
                     {
-                        System.Threading.Thread.Sleep(200);
+                        System.Threading.Thread.Sleep(1000);  // Give Arduino more time to boot
 
                         _serialPort.DiscardInBuffer();
                         _serialPort.WriteLine("PING");
@@ -876,9 +939,21 @@ namespace Automatic_Pet_Feeder
                         }
                         catch (TimeoutException)
                         {
+                            AppendToLog("No response to PING - trying again...", Color.FromArgb(243, 156, 18));
+                            System.Threading.Thread.Sleep(500);
+                            _serialPort.WriteLine("PING");
+                            try
+                            {
+                                response = _serialPort.ReadLine();
+                            }
+                            catch (TimeoutException)
+                            {
+                                // Still no response, but continue anyway
+                                AppendToLog("No PING response, but connection established", Color.FromArgb(243, 156, 18));
+                            }
                         }
 
-                        if (!string.IsNullOrEmpty(response))
+                        if (!string.IsNullOrEmpty(response) && response.Trim() == "PONG")
                         {
                             label3.Text = "Connected to " + portName + " at " + baudRate + " baud. Reply: " + response;
                             AppendToLog($"Arduino connected successfully! Response: {response.Trim()}", Color.FromArgb(46, 204, 113));
@@ -891,16 +966,16 @@ namespace Automatic_Pet_Feeder
                         }
                         else
                         {
-                            try
-                            {
-                                _serialPort.Close();
-                            }
-                            catch { }
-
-                            label3.Text = "No device response on " + portName + ". Connection closed.";
-                            AppendToLog($"No response from Arduino on {portName}. Connection closed.", Color.FromArgb(231, 76, 60));
-                            UpdateLogStatus("• No response");
-                            MessageBox.Show("Connected to " + portName + " but no response received. Ensure your Arduino is programmed to reply to a handshake (e.g. respond to 'PING').", "No Device Response", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            // Connection established but no proper handshake - still usable
+                            label3.Text = "Connected to " + portName + " (no handshake response)";
+                            AppendToLog($"Connected to {portName} but no PONG response received", Color.FromArgb(243, 156, 18));
+                            AppendToLog("Connection may still work for sending commands", Color.FromArgb(243, 156, 18));
+                            UpdateLogStatus("• Connected (no handshake)");
+                            
+                            labelWeightValue.Text = "Connected (no handshake)";
+                            labelWeightValue.ForeColor = Color.FromArgb(243, 156, 18);
+                            
+                            UpdateFoodLevelStatus("Connected (no handshake)", Color.FromArgb(243, 156, 18));
                         }
                     }
                     catch (Exception ex)
@@ -909,7 +984,7 @@ namespace Automatic_Pet_Feeder
                         label3.Text = "Handshake error: " + ex.Message;
                         AppendToLog($"Handshake error: {ex.Message}", Color.FromArgb(231, 76, 60));
                         UpdateLogStatus("• Connection error");
-                        MessageBox.Show("Error during handshake: " + ex.Message, "Handshake Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error during handshake: " + ex.Message + "\n\nMake sure your Arduino is running the correct sketch.", "Handshake Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
@@ -923,14 +998,14 @@ namespace Automatic_Pet_Feeder
                 label3.Text = "Access denied: " + uaEx.Message;
                 AppendToLog($"Access denied: {uaEx.Message}", Color.FromArgb(231, 76, 60));
                 UpdateLogStatus("• Access denied");
-                MessageBox.Show("Access to " + portName + " is denied: " + uaEx.Message, "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Access to " + (portName ?? "port") + " is denied. Port may be in use by another application.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (System.IO.IOException ioEx)
             {
                 label3.Text = "I/O error: " + ioEx.Message;
                 AppendToLog($"I/O error: {ioEx.Message}", Color.FromArgb(231, 76, 60));
                 UpdateLogStatus("• I/O error");
-                MessageBox.Show("I/O error opening " + portName + ": " + ioEx.Message, "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("I/O error opening " + (portName ?? "port") + ": " + ioEx.Message, "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -1051,6 +1126,36 @@ namespace Automatic_Pet_Feeder
         private void labelWeightValue_Click(object sender, EventArgs e)
         {
 
+        }
+
+        // Public methods for Arduino communication (used by Form3)
+        public bool IsArduinoConnected()
+        {
+            return _serialPort != null && _serialPort.IsOpen;
+        }
+
+        public bool SendArduinoCommand(string command)
+        {
+            try
+            {
+                if (_serialPort != null && _serialPort.IsOpen)
+                {
+                    _serialPort.WriteLine(command);
+                    AppendToLog($"Sent command to Arduino: {command}", Color.FromArgb(52, 152, 219));
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                AppendToLog($"Error sending command to Arduino: {ex.Message}", Color.FromArgb(231, 76, 60));
+                return false;
+            }
+        }
+
+        public void LogMessage(string message, Color color)
+        {
+            AppendToLog(message, color);
         }
     }
 }

@@ -10,5 +10,8 @@
     <Setting Name="FeedingInterval" Type="System.String" Scope="User">
       <Value Profile="(Default)">Every Day</Value>
     </Setting>
+    <Setting Name="AutoFeedDuration" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
