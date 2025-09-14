@@ -46,5 +46,17 @@ namespace Automatic_Pet_Feeder.Properties {
                 this["FeedingInterval"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int AutoFeedDuration {
+            get {
+                return ((int)(this["AutoFeedDuration"]));
+            }
+            set {
+                this["AutoFeedDuration"] = value;
+            }
+        }
     }
 }
