@@ -1027,7 +1027,80 @@ namespace Automatic_Pet_Feeder
 
         private void button4_Click(object sender, EventArgs e)
         {
+            // Simple test response time without advanced timing features
+            TestBasicArduinoResponseTime();
+        }
 
+        private void buttonShowStats_Click(object sender, EventArgs e)
+        {
+            // Show basic Arduino communication stats
+            ShowBasicConnectionStats();
+        }
+
+        private void TestBasicArduinoResponseTime()
+        {
+            if (!IsArduinoConnected())
+            {
+                AppendToLog("❌ Cannot test response time: Arduino not connected", Color.FromArgb(231, 76, 60));
+                MessageBox.Show("Arduino is not connected. Please connect first.", "Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            AppendToLog("🧪 Testing Arduino response time...", Color.FromArgb(52, 152, 219));
+            
+            var testCommands = new[]
+            {
+                "PING",
+                "LED_ON", 
+                "LED_OFF",
+                "STATUS"
+            };
+
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                foreach (var command in testCommands)
+                {
+                    var startTime = DateTime.Now;
+                    
+                    if (SendArduinoCommand(command))
+                    {
+                        // Wait a moment for potential response
+                        System.Threading.Thread.Sleep(100);
+                        
+                        var elapsedMs = (DateTime.Now - startTime).TotalMilliseconds;
+                        AppendToLog($"✅ {command}: {elapsedMs:F0}ms", Color.FromArgb(46, 204, 113));
+                    }
+                    else
+                    {
+                        AppendToLog($"❌ {command}: Failed to send", Color.FromArgb(231, 76, 60));
+                    }
+                    
+                    System.Threading.Thread.Sleep(500); // Wait between commands
+                }
+                
+                AppendToLog("🧪 Basic response time test completed", Color.FromArgb(52, 152, 219));
+            });
+        }
+
+        private void ShowBasicConnectionStats()
+        {
+            AppendToLog("📊 === Basic Connection Statistics ===", Color.FromArgb(155, 89, 182));
+            AppendToLog($"📊 Arduino Connected: {(IsArduinoConnected() ? "YES" : "NO")}", Color.FromArgb(155, 89, 182));
+            
+            if (IsArduinoConnected())
+            {
+                AppendToLog($"📊 Port: {_serialPort.PortName}", Color.FromArgb(155, 89, 182));
+                AppendToLog($"📊 Baud Rate: {_serialPort.BaudRate}", Color.FromArgb(155, 89, 182));
+                AppendToLog($"📊 Data Bits: {_serialPort.DataBits}", Color.FromArgb(155, 89, 182));
+                AppendToLog($"📊 Parity: {_serialPort.Parity}", Color.FromArgb(155, 89, 182));
+                AppendToLog($"📊 Stop Bits: {_serialPort.StopBits}", Color.FromArgb(155, 89, 182));
+            }
+            else
+            {
+                AppendToLog("📊 No connection statistics available", Color.FromArgb(243, 156, 18));
+            }
+            
+            AppendToLog("📊 === End Statistics ===", Color.FromArgb(155, 89, 182));
         }
 
         private void button5_Click(object sender, EventArgs e)

@@ -1,9 +1,11 @@
 #include <DS1302.h>
 #include <Servo.h>
+#include <HX711.h>
 
 const int dipSwitch = 9;
 const int servoPin = 8;
-const int weightPin = A0;     // RPL 110 weight sensor
+const int hx711_dout_pin = A0;    // HX711 data pin (was weightPin)
+const int hx711_sck_pin = A1;     // HX711 clock pin (new)
 const int ledStatus = 11;
 
 const int trigPin = 2;
@@ -13,17 +15,20 @@ const int echoPin = 3;
 DS1302 rtc(5, 6, 7);
 
 Servo myServo;
-int weightThreshold = 20;     // Lowered threshold for sensitive detection
+HX711 scale;
+
+// HX711 and load cell settings
+float calibration_factor = -7050.0;  // Default calibration factor (needs adjustment)
+float weightThreshold = 5.0;         // Threshold in grams for pet detection
+float foodThreshold = 2.0;           // Threshold in grams for food detection
+
 const int distanceThreshold = 10; // cm - for food storage level
 const int hysteresis = 2;         // cm margin to avoid flicker
 
-// RPL 110 calibration values (needs to be calibrated with known weights)
-const float weightCalibrationFactor = 1.0;  // grams per ADC unit (needs calibration)
-const int weightZeroOffset = 0;              // ADC reading when no weight (needs calibration)
-
-// Sensitivity settings for RPL 110
-bool diagnosticMode = true;   // Enable detailed weight diagnostics
-int baselineWeight = 0;       // Baseline reading (set during startup)
+// Weight measurement settings
+bool diagnosticMode = true;       // Enable detailed weight diagnostics
+float baselineWeight = 0.0;       // Baseline reading in grams (set during startup)
+float tareWeight = 0.0;           // Tare weight for zeroing
 
 // Servo control variables
 bool servoActive = false;
@@ -61,21 +66,50 @@ void setup() {
   myServo.write(SERVO_CLOSED_POSITION);  // Start with servo closed
   delay(500);  // Give servo time to move to position
   
-  Serial.println("?? Servo initialized to closed position");
+  Serial.println("? Servo initialized to closed position");
   
-  // Calibrate baseline weight reading
-  Serial.println("?? Calibrating RPL 110 baseline...");
-  delay(1000);  // Reduced wait time
+  // Initialize HX711
+  Serial.println("?? Initializing HX711 load cell...");
+  scale.begin(hx711_dout_pin, hx711_sck_pin);
   
-  long total = 0;
-  for (int i = 0; i < 10; i++) {  // Reduced samples for faster startup
-    total += analogRead(weightPin);
-    delay(50);
+  // Check if HX711 is ready
+  if (scale.is_ready()) {
+    Serial.println("? HX711 found and ready");
+  } else {
+    Serial.println("? HX711 not found. Check wiring!");
+    while(1); // Stop execution if HX711 not found
   }
-  baselineWeight = total / 10;
   
-  Serial.print("? Baseline weight set to: "); Serial.println(baselineWeight);
-  Serial.println("?? RPL 110 setup complete. Place weight to test...");
+  // Set calibration factor
+  scale.set_scale(calibration_factor);
+  
+  // Tare the scale (zero it)
+  Serial.println("?? Taring scale (zeroing)...");
+  Serial.println("?? Make sure nothing is on the scale!");
+  delay(2000);  // Give time to remove any weight
+  
+  scale.tare();  // Reset the scale to 0
+  tareWeight = 0.0;
+  
+  Serial.println("? Scale tared successfully");
+  
+  // Set baseline weight (should be close to 0 after taring)
+  Serial.println("?? Setting baseline weight...");
+  delay(1000);
+  
+  float total = 0;
+  for (int i = 0; i < 10; i++) {
+    total += scale.get_units(1);
+    delay(100);
+  }
+  baselineWeight = total / 10.0;
+  
+  Serial.print("?? Baseline weight set to: "); 
+  Serial.print(baselineWeight, 2); 
+  Serial.println(" grams");
+  
+  Serial.println("? HX711 setup complete. Place weight to test...");
+  Serial.println("?? Calibration Note: If readings seem off, adjust 'calibration_factor' value");
   Serial.println("?? Ready for PC commands (PING, DISPENSE_X, FEED_X)");
   Serial.println("?? Arduino setup complete - waiting for commands...");
   Serial.flush();  // Ensure all data is sent
@@ -93,6 +127,26 @@ void processSerialCommand() {
       Serial.println("PONG");
       Serial.flush();  // Ensure immediate response
     }
+    else if (command == "TARE") {
+      // Allow PC to send tare command
+      scale.tare();
+      baselineWeight = 0.0;
+      Serial.println("? Scale tared via PC command");
+    }
+    else if (command.startsWith("CALIBRATE_")) {
+      // Allow PC to send calibration factor (CALIBRATE_-7050)
+      int underscoreIndex = command.indexOf('_');
+      if (underscoreIndex != -1) {
+        float newFactor = command.substring(underscoreIndex + 1).toFloat();
+        if (newFactor != 0) {
+          calibration_factor = newFactor;
+          scale.set_scale(calibration_factor);
+          Serial.print("? Calibration factor updated to: "); Serial.println(calibration_factor);
+        } else {
+          Serial.println("? Invalid calibration factor");
+        }
+      }
+    }
     else if (command.startsWith("DISPENSE_") || command.startsWith("FEED_")) {
       // Extract duration from command (DISPENSE_5 or FEED_5)
       int underscoreIndex = command.indexOf('_');
@@ -100,7 +154,7 @@ void processSerialCommand() {
         int duration = command.substring(underscoreIndex + 1).toInt();
         if (duration > 0 && duration <= 30) {  // Limit to 30 seconds max
           startDispensing(duration);
-          Serial.print("? Dispensing for "); Serial.print(duration); Serial.println(" seconds");
+          Serial.print("??? Dispensing for "); Serial.print(duration); Serial.println(" seconds");
         } else {
           Serial.println("? Invalid duration (1-30 seconds allowed)");
         }
@@ -127,7 +181,7 @@ void startDispensing(int seconds) {
   servoStartTime = millis();
   servoDuration = seconds * 1000UL;  // Convert to milliseconds
   myServo.write(SERVO_OPEN_POSITION);
-  Serial.println("??? Servo opened - dispensing food");
+  Serial.println("?? Servo opened - dispensing food");
   Serial.flush();
 }
 
@@ -187,57 +241,66 @@ int getDistance() {
   return (int)readings[valid / 2];
 }
 
-int getWeight() {
-  // Take more readings for better stability with low sensitivity sensor
-  const int samples = 5;  // Reduced for faster processing
-  long total = 0;
+float getWeight() {
+  // Get weight reading from HX711 in grams
+  if (!scale.is_ready()) {
+    Serial.println("?? HX711 not ready");
+    return -999.0;  // Error value
+  }
+  
+  // Take average of multiple readings for stability
+  const int samples = 3;
+  float total = 0;
   
   for (int i = 0; i < samples; i++) {
-    total += analogRead(weightPin);
-    delay(2);  // Reduced delay
+    total += scale.get_units(1);
+    delay(10);
   }
   
   return total / samples;
 }
 
-int getWeightHighRes() {
+float getWeightHighRes() {
   // High resolution reading for diagnostics
-  const int samples = 10;  // Reduced samples
-  long total = 0;
-  int minVal = 1023, maxVal = 0;
+  if (!scale.is_ready()) {
+    Serial.println("?? HX711 not ready for high-res reading");
+    return -999.0;
+  }
+  
+  const int samples = 10;
+  float total = 0;
+  float minVal = 999999, maxVal = -999999;
   
   for (int i = 0; i < samples; i++) {
-    int reading = analogRead(weightPin);
+    float reading = scale.get_units(1);
     total += reading;
     if (reading < minVal) minVal = reading;
     if (reading > maxVal) maxVal = reading;
-    delay(2);
+    delay(50);
   }
   
-  // Print diagnostic info
-  Serial.print("?? Weight Diagnostics - Min: "); Serial.print(minVal);
-  Serial.print(" Max: "); Serial.print(maxVal);
-  Serial.print(" Range: "); Serial.print(maxVal - minVal);
-  Serial.print(" Avg: "); Serial.println(total / samples);
+  float avgWeight = total / samples;
   
-  return total / samples;
+  // Print diagnostic info
+  Serial.print("?? Weight Diagnostics - Min: "); Serial.print(minVal, 2);
+  Serial.print("g Max: "); Serial.print(maxVal, 2);
+  Serial.print("g Range: "); Serial.print(maxVal - minVal, 2);
+  Serial.print("g Avg: "); Serial.print(avgWeight, 2); Serial.println("g");
+  Serial.print("?? Raw ADC: "); Serial.println(scale.read());
+  Serial.print("?? Calibration Factor: "); Serial.println(calibration_factor);
+  
+  return avgWeight;
 }
 
-float getWeightInGrams(int rawReading) {
-  // Convert raw ADC reading to grams
-  // Formula: Weight = (rawReading - zeroOffset) * calibrationFactor
-  return (rawReading - weightZeroOffset) * weightCalibrationFactor;
+bool isPetPresent(float weightReading) {
+  // Check if pet is present based on weight threshold
+  return (weightReading - baselineWeight) > weightThreshold;
 }
 
-bool isPetPresent(int weightReading) {
-  // RPL 110 typically gives higher readings when weight is applied
-  return weightReading > weightThreshold;
-}
-
-bool isFoodInBowl(int weightReading) {
+bool isFoodInBowl(float weightReading) {
   // Check if there's food in the bowl based on weight change from baseline
-  int weightDifference = abs(weightReading - baselineWeight);
-  return weightDifference > weightThreshold;
+  float weightDifference = abs(weightReading - baselineWeight);
+  return weightDifference > foodThreshold;
 }
 
 void setStorageState(StorageState state, int distance) {
@@ -251,7 +314,7 @@ void setStorageState(StorageState state, int distance) {
     Serial.print(" | Distance: "); Serial.print(distance); Serial.println(" cm");
   } else { // STORAGE_UNKNOWN
     digitalWrite(ledStatus, LOW); // default LED off on timeout
-    Serial.println("?? Storage sensor timeout (no echo)");
+    Serial.println("? Storage sensor timeout (no echo)");
   }
 }
 
@@ -263,8 +326,8 @@ void loop() {
   checkServoControl();
   
   bool buttonState = digitalRead(dipSwitch);
-  int weightReading = getWeight();
-  float weightInGrams = getWeightInGrams(weightReading);
+  float weightReading = getWeight();
+  bool petPresent = isPetPresent(weightReading);
   bool foodInBowl = isFoodInBowl(weightReading);
   int distance = getDistance();
 
@@ -298,7 +361,7 @@ void loop() {
     lastStorageState = currentStorage;
   }
 
-  // Enhanced monitoring output with RPL 110 diagnostics
+  // Enhanced monitoring output with HX711 diagnostics
   static unsigned long lastDbg = 0;
   if (millis() - lastDbg > 10000) { // every 10s for less spam but still informative
     Serial.println("=== ?? FEEDER MONITORING STATUS ===");
@@ -312,16 +375,21 @@ void loop() {
     } else {
       Serial.println("IDLE");
     }
-    Serial.print("?? Bowl Weight Raw: "); Serial.print(weightReading); Serial.println(" (ADC)");
-    Serial.print("?? Weight: "); Serial.print(weightInGrams, 1); Serial.println("g");
-    Serial.print("??? Food in Bowl: "); Serial.println(foodInBowl ? "YES" : "NO");
+    
+    if (weightReading != -999.0) {
+      Serial.print("?? Bowl Weight: "); Serial.print(weightReading, 2); Serial.println(" grams");
+      Serial.print("?? Pet Present: "); Serial.println(petPresent ? "YES" : "NO");
+      Serial.print("??? Food in Bowl: "); Serial.println(foodInBowl ? "YES" : "NO");
+    } else {
+      Serial.println("? Weight sensor error");
+    }
     
     // Run diagnostics every 30 seconds
     static unsigned long lastDiag = 0;
     if (diagnosticMode && (millis() - lastDiag > 30000)) {
-      Serial.println("--- ?? RPL 110 DIAGNOSTICS ---");
+      Serial.println("--- ?? HX711 DIAGNOSTICS ---");
       getWeightHighRes();
-      Serial.println("------------------------------");
+      Serial.println("-----------------------------");
       lastDiag = millis();
     }
     
@@ -332,7 +400,7 @@ void loop() {
     if (currentStorage == STORAGE_ADEQUATE) Serial.println("ADEQUATE");
     else if (currentStorage == STORAGE_LOW) Serial.println("LOW");
     else Serial.println("UNKNOWN");
-    Serial.println("==================================");
+    Serial.println("===================================");
     lastDbg = millis();
   }
 
