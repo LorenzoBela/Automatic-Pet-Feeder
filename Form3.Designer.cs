@@ -41,9 +41,6 @@ namespace Automatic_Pet_Feeder
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.buttonDispense = new ReaLTaiizor.Controls.MaterialButton();
             this.label2 = new ReaLTaiizor.Controls.DungeonLabel();
-            this.buttonTestLED = new ReaLTaiizor.Controls.MaterialButton();
-            this.buttonShowStats = new ReaLTaiizor.Controls.MaterialButton();
-            this.buttonStressTest = new ReaLTaiizor.Controls.MaterialButton();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
@@ -54,10 +51,9 @@ namespace Automatic_Pet_Feeder
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("Garamond", 26F, System.Drawing.FontStyle.Bold);
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
-
             this.label1.Location = new System.Drawing.Point(180, 30);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(290, 39);
+            this.label1.Size = new System.Drawing.Size(276, 39);
             this.label1.TabIndex = 0;
             this.label1.Text = "Manual Dispense";
             // 
@@ -67,9 +63,10 @@ namespace Automatic_Pet_Feeder
             this.buttonExit.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonExit.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.buttonExit.Depth = 0;
-            this.buttonExit.Font = new System.Drawing.Font("Playfair Display", 12F, System.Drawing.FontStyle.Bold);
+            this.buttonExit.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold);
             this.buttonExit.HighEmphasis = true;
             this.buttonExit.Icon = null;
+            this.buttonExit.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
             this.buttonExit.Location = new System.Drawing.Point(520, 450);
             this.buttonExit.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.buttonExit.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
@@ -86,7 +83,7 @@ namespace Automatic_Pet_Feeder
             // panel1
             // 
             this.panel1.Alpha = 20;
-            this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
+            this.panel1.BackColor = System.Drawing.Color.Transparent;
             this.panel1.Background = true;
             this.panel1.Background_WidthPen = 3F;
             this.panel1.BackgroundPen = true;
@@ -126,11 +123,11 @@ namespace Automatic_Pet_Feeder
             // 
             this.label5.AutoSize = true;
             this.label5.BackColor = System.Drawing.Color.Transparent;
-            this.label5.Font = new System.Drawing.Font("Cormorant Garamond", 12F, System.Drawing.FontStyle.Bold);
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold);
             this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
             this.label5.Location = new System.Drawing.Point(390, 170);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(24, 19);
+            this.label5.Size = new System.Drawing.Size(34, 20);
             this.label5.TabIndex = 7;
             this.label5.Text = "0%";
             // 
@@ -139,23 +136,20 @@ namespace Automatic_Pet_Feeder
             this.progressBar1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(81)))), ((int)(((byte)(104)))));
             this.progressBar1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
             this.progressBar1.Location = new System.Drawing.Point(120, 170);
-            this.progressBar1.Maximum = 100;
-            this.progressBar1.Minimum = 0;
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(260, 20);
             this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progressBar1.TabIndex = 6;
-            this.progressBar1.Value = 0;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Transparent;
-            this.label4.Font = new System.Drawing.Font("Cormorant Garamond", 11F, System.Drawing.FontStyle.Italic);
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Italic);
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(183)))), ((int)(((byte)(198)))));
             this.label4.Location = new System.Drawing.Point(35, 210);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(144, 18);
+            this.label4.Size = new System.Drawing.Size(209, 18);
             this.label4.TabIndex = 5;
             this.label4.Text = "Manually dispense food for pet";
             // 
@@ -163,11 +157,11 @@ namespace Automatic_Pet_Feeder
             // 
             this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.Font = new System.Drawing.Font("Cormorant Garamond", 13F, System.Drawing.FontStyle.Regular);
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
             this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(209)))), ((int)(((byte)(216)))), ((int)(((byte)(224)))));
             this.label3.Location = new System.Drawing.Point(35, 35);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(122, 21);
+            this.label3.Size = new System.Drawing.Size(180, 22);
             this.label3.TabIndex = 4;
             this.label3.Text = "Dispense Time (sec):";
             // 
@@ -175,7 +169,7 @@ namespace Automatic_Pet_Feeder
             // 
             this.numericUpDown1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(81)))), ((int)(((byte)(104)))));
             this.numericUpDown1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.numericUpDown1.Font = new System.Drawing.Font("Cormorant Garamond", 13F);
+            this.numericUpDown1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
             this.numericUpDown1.ForeColor = System.Drawing.Color.White;
             this.numericUpDown1.Location = new System.Drawing.Point(220, 30);
             this.numericUpDown1.Maximum = new decimal(new int[] {
@@ -203,9 +197,10 @@ namespace Automatic_Pet_Feeder
             this.buttonDispense.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonDispense.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.buttonDispense.Depth = 0;
-            this.buttonDispense.Font = new System.Drawing.Font("Playfair Display", 13F, System.Drawing.FontStyle.Bold);
+            this.buttonDispense.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
             this.buttonDispense.HighEmphasis = true;
             this.buttonDispense.Icon = null;
+            this.buttonDispense.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
             this.buttonDispense.Location = new System.Drawing.Point(155, 85);
             this.buttonDispense.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.buttonDispense.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
@@ -223,79 +218,13 @@ namespace Automatic_Pet_Feeder
             // 
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Transparent;
-            this.label2.Font = new System.Drawing.Font("Cormorant Garamond", 13F, System.Drawing.FontStyle.Regular);
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(209)))), ((int)(((byte)(216)))), ((int)(((byte)(224)))));
             this.label2.Location = new System.Drawing.Point(35, 170);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(62, 21);
+            this.label2.Size = new System.Drawing.Size(87, 22);
             this.label2.TabIndex = 0;
             this.label2.Text = "Progress:";
-            // 
-            // buttonTestLED
-            // 
-            this.buttonTestLED.AutoSize = false;
-            this.buttonTestLED.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonTestLED.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
-            this.buttonTestLED.Depth = 0;
-            this.buttonTestLED.Font = new System.Drawing.Font("Playfair Display", 11F, System.Drawing.FontStyle.Bold);
-            this.buttonTestLED.HighEmphasis = true;
-            this.buttonTestLED.Icon = null;
-            this.buttonTestLED.Location = new System.Drawing.Point(100, 390);
-            this.buttonTestLED.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.buttonTestLED.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
-            this.buttonTestLED.Name = "buttonTestLED";
-            this.buttonTestLED.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.buttonTestLED.Size = new System.Drawing.Size(140, 40);
-            this.buttonTestLED.TabIndex = 3;
-            this.buttonTestLED.Text = "Test LED Response";
-            this.buttonTestLED.Type = ReaLTaiizor.Controls.MaterialButton.MaterialButtonType.Outlined;
-            this.buttonTestLED.UseAccentColor = true;
-            this.buttonTestLED.UseVisualStyleBackColor = true;
-            this.buttonTestLED.Click += new System.EventHandler(this.buttonTestLED_Click);
-            // 
-            // buttonShowStats
-            // 
-            this.buttonShowStats.AutoSize = false;
-            this.buttonShowStats.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonShowStats.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
-            this.buttonShowStats.Depth = 0;
-            this.buttonShowStats.Font = new System.Drawing.Font("Playfair Display", 11F, System.Drawing.FontStyle.Bold);
-            this.buttonShowStats.HighEmphasis = true;
-            this.buttonShowStats.Icon = null;
-            this.buttonShowStats.Location = new System.Drawing.Point(260, 390);
-            this.buttonShowStats.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.buttonShowStats.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
-            this.buttonShowStats.Name = "buttonShowStats";
-            this.buttonShowStats.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.buttonShowStats.Size = new System.Drawing.Size(120, 40);
-            this.buttonShowStats.TabIndex = 4;
-            this.buttonShowStats.Text = "Show Stats";
-            this.buttonShowStats.Type = ReaLTaiizor.Controls.MaterialButton.MaterialButtonType.Outlined;
-            this.buttonShowStats.UseAccentColor = true;
-            this.buttonShowStats.UseVisualStyleBackColor = true;
-            this.buttonShowStats.Click += new System.EventHandler(this.buttonShowStats_Click);
-            // 
-            // buttonStressTest
-            // 
-            this.buttonStressTest.AutoSize = false;
-            this.buttonStressTest.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonStressTest.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
-            this.buttonStressTest.Depth = 0;
-            this.buttonStressTest.Font = new System.Drawing.Font("Playfair Display", 11F, System.Drawing.FontStyle.Bold);
-            this.buttonStressTest.HighEmphasis = true;
-            this.buttonStressTest.Icon = null;
-            this.buttonStressTest.Location = new System.Drawing.Point(100, 450);
-            this.buttonStressTest.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.buttonStressTest.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
-            this.buttonStressTest.Name = "buttonStressTest";
-            this.buttonStressTest.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.buttonStressTest.Size = new System.Drawing.Size(140, 40);
-            this.buttonStressTest.TabIndex = 5;
-            this.buttonStressTest.Text = "Stress Test";
-            this.buttonStressTest.Type = ReaLTaiizor.Controls.MaterialButton.MaterialButtonType.Outlined;
-            this.buttonStressTest.UseAccentColor = true;
-            this.buttonStressTest.UseVisualStyleBackColor = true;
-            this.buttonStressTest.Click += new System.EventHandler(this.buttonStressTest_Click);
             // 
             // Form3
             // 
@@ -303,9 +232,6 @@ namespace Automatic_Pet_Feeder
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(39)))), ((int)(((byte)(52)))));
             this.ClientSize = new System.Drawing.Size(650, 520);
-            this.Controls.Add(this.buttonStressTest);
-            this.Controls.Add(this.buttonShowStats);
-            this.Controls.Add(this.buttonTestLED);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonExit);
             this.Controls.Add(this.label1);
@@ -334,8 +260,5 @@ namespace Automatic_Pet_Feeder
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private ReaLTaiizor.Controls.MaterialButton buttonDispense;
         private ReaLTaiizor.Controls.DungeonLabel label2;
-        private ReaLTaiizor.Controls.MaterialButton buttonTestLED;
-        private ReaLTaiizor.Controls.MaterialButton buttonShowStats;
-        private ReaLTaiizor.Controls.MaterialButton buttonStressTest;
     }
 }
