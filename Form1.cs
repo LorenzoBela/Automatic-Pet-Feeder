@@ -424,12 +424,19 @@ namespace Automatic_Pet_Feeder
             CheckArduinoData();
         }
 
+        private DateTime _lastDataReceived = DateTime.MinValue;
+        private bool _dataFlowDetected = false;
+
         private void CheckArduinoData()
         {
             try
             {
                 if (_serialPort != null && _serialPort.IsOpen && _serialPort.BytesToRead > 0)
                 {
+                    // Mark that we received data
+                    _lastDataReceived = DateTime.Now;
+                    _dataFlowDetected = true;
+                    
                     // Read larger chunks of data at once
                     int bytesToRead = _serialPort.BytesToRead;
                     
@@ -445,6 +452,21 @@ namespace Automatic_Pet_Feeder
                     {
                         // Process data more efficiently
                         ProcessArduinoDataBatch(data);
+                    }
+                }
+                else if (_serialPort != null && _serialPort.IsOpen)
+                {
+                    // Check if data flow has stopped
+                    if (_dataFlowDetected && (DateTime.Now - _lastDataReceived).TotalSeconds > 15)
+                    {
+                        // No data for 15 seconds - update status
+                        UpdateLogStatus("• Connected but no data");
+                        UpdateFoodLevelStatus("Waiting for data...", Color.FromArgb(243, 156, 18));
+                        labelWeightValue.Text = "No data received";
+                        labelWeightValue.ForeColor = Color.FromArgb(243, 156, 18);
+                        
+                        AppendToLog("Warning: No data received from Arduino for 15 seconds", Color.FromArgb(243, 156, 18));
+                        _dataFlowDetected = false; // Reset flag
                     }
                 }
             }
@@ -485,13 +507,13 @@ namespace Automatic_Pet_Feeder
             Color messageColor = Color.FromArgb(189, 195, 199);
             string messageKey = "general"; // Default key for throttling
 
-            if (data.Contains("Food available") || data.Contains("✅"))
+            if (data.Contains("Food Available") || data.Contains("✅"))
             {
                 UpdateFoodLevelStatus("Food Available", Color.FromArgb(46, 204, 113));
                 messageColor = Color.FromArgb(46, 204, 113);
                 messageKey = "food_available";
             }
-            else if (data.Contains("Storage low") || data.Contains("Storage empty") || data.Contains("⚠️"))
+            else if (data.Contains("Storage Empty/Low") || data.Contains("Storage low") || data.Contains("Storage empty") || data.Contains("⚠️"))
             {
                 UpdateFoodLevelStatus("Low/Empty", Color.FromArgb(231, 76, 60));
                 messageColor = Color.FromArgb(231, 76, 60);
@@ -507,12 +529,13 @@ namespace Automatic_Pet_Feeder
                         string distanceStr = parts[1].Trim().Replace("cm", "").Replace("centimeters", "").Trim();
                         if (double.TryParse(distanceStr, out double distance))
                         {
-                            if (distance <= 10 && distance > 0)
+                            // NEW LOGIC: 7cm+ = empty/low, below 7cm = food available
+                            if (distance < 7 && distance > 0)  // Less than 7cm = Food Available
                             {
                                 UpdateFoodLevelStatus("Food Available", Color.FromArgb(46, 204, 113));
                                 messageColor = Color.FromArgb(46, 204, 113);
                             }
-                            else if (distance > 10)
+                            else if (distance >= 7)  // 7cm or more = Empty/Low
                             {
                                 UpdateFoodLevelStatus("Low/Empty", Color.FromArgb(231, 76, 60));
                                 messageColor = Color.FromArgb(231, 76, 60);
@@ -532,7 +555,7 @@ namespace Automatic_Pet_Feeder
                     return;
                 }
             }
-            else if (data.Contains("Ultrasonic timeout") || data.Contains("no echo"))
+            else if (data.Contains("Distance: ERROR") || data.Contains("Ultrasonic timeout") || data.Contains("no echo"))
             {
                 UpdateFoodLevelStatus("Sensor Error", Color.FromArgb(243, 156, 18));
                 messageColor = Color.FromArgb(243, 156, 18);

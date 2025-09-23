@@ -53,9 +53,9 @@ namespace Automatic_Pet_Feeder
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(203)))), ((int)(((byte)(92)))));
             this.label1.Location = new System.Drawing.Point(180, 30);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(276, 39);
+            this.label1.Size = new System.Drawing.Size(265, 39);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Manual Dispense";
+            this.label1.Text = "Manual Controls";
             // 
             // buttonExit
             // 
@@ -67,7 +67,7 @@ namespace Automatic_Pet_Feeder
             this.buttonExit.HighEmphasis = true;
             this.buttonExit.Icon = null;
             this.buttonExit.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
-            this.buttonExit.Location = new System.Drawing.Point(520, 450);
+            this.buttonExit.Location = new System.Drawing.Point(494, 406);
             this.buttonExit.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.buttonExit.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             this.buttonExit.Name = "buttonExit";
@@ -106,7 +106,7 @@ namespace Automatic_Pet_Feeder
             this.panel1.Lighting = false;
             this.panel1.LinearGradient_Background = false;
             this.panel1.LinearGradientPen = false;
-            this.panel1.Location = new System.Drawing.Point(100, 120);
+            this.panel1.Location = new System.Drawing.Point(100, 100);
             this.panel1.Name = "panel1";
             this.panel1.PenWidth = 15;
             this.panel1.RGB = false;
@@ -231,7 +231,7 @@ namespace Automatic_Pet_Feeder
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(39)))), ((int)(((byte)(52)))));
-            this.ClientSize = new System.Drawing.Size(650, 520);
+            this.ClientSize = new System.Drawing.Size(650, 482);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonExit);
             this.Controls.Add(this.label1);
@@ -239,7 +239,7 @@ namespace Automatic_Pet_Feeder
             this.MaximizeBox = false;
             this.Name = "Form3";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Manual Dispense - Luxury Edition";
+            this.Text = "Manual Controls - Pet Feeder";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
