@@ -229,7 +229,7 @@ namespace Automatic_Pet_Feeder
                 return;
             }
 
-            mainForm.LogMessage("📏 Requesting current distance reading...", Color.FromArgb(52, 152, 219));
+            mainForm.LogMessage("📏 Requesting detailed distance reading with diagnostics...", Color.FromArgb(52, 152, 219));
             
             var startTime = DateTime.Now;
             bool commandSent = mainForm.SendArduinoCommand("DISTANCE");
@@ -238,13 +238,107 @@ namespace Automatic_Pet_Feeder
             if (commandSent)
             {
                 mainForm.LogMessage($"⚡ Distance request sent in {responseTime:F0}ms", Color.FromArgb(46, 204, 113));
-                MessageBox.Show($"Distance reading requested successfully!\n\nResponse Time: {responseTime:F0}ms\n\nCheck the main form log for the distance value.", 
-                              "Distance Request Sent", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Distance reading with diagnostics requested!\n\nResponse Time: {responseTime:F0}ms\n\nCheck the main form log for detailed sensor diagnostics.", 
+                              "Distance Diagnostic Sent", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
                 mainForm.LogMessage("❌ Failed to request distance", Color.FromArgb(231, 76, 60));
                 MessageBox.Show("Failed to send distance request to Arduino.", "Request Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Add new button for ultrasonic sensor diagnostics
+        private void buttonUltrasonicTest_Click(object sender, EventArgs e)
+        {
+            if (mainForm == null || !mainForm.IsArduinoConnected())
+            {
+                MessageBox.Show("Arduino is not connected.", "Connection Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show("This will perform a comprehensive test of the ultrasonic sensor.\n\nIt will run multiple readings and show detailed diagnostics.\n\nContinue?", 
+                                       "Ultrasonic Sensor Test", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            
+            if (result != DialogResult.Yes) return;
+
+            mainForm.LogMessage("🔍 Starting ultrasonic sensor comprehensive test...", Color.FromArgb(155, 89, 182));
+            
+            var startTime = DateTime.Now;
+            bool commandSent = mainForm.SendArduinoCommand("ULTRA_TEST");
+            var responseTime = (DateTime.Now - startTime).TotalMilliseconds;
+            
+            if (commandSent)
+            {
+                mainForm.LogMessage($"⚡ Ultrasonic test command sent in {responseTime:F0}ms", Color.FromArgb(46, 204, 113));
+                MessageBox.Show($"Ultrasonic sensor test started!\n\nResponse Time: {responseTime:F0}ms\n\nMonitor the main form log for detailed test results and diagnostics.", 
+                              "Sensor Test Started", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                mainForm.LogMessage("❌ Failed to start ultrasonic sensor test", Color.FromArgb(231, 76, 60));
+                MessageBox.Show("Failed to send ultrasonic test command to Arduino.", "Test Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Add new button for ultrasonic sensor statistics
+        private void buttonUltrasonicStats_Click(object sender, EventArgs e)
+        {
+            if (mainForm == null || !mainForm.IsArduinoConnected())
+            {
+                MessageBox.Show("Arduino is not connected.", "Connection Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            mainForm.LogMessage("📊 Requesting ultrasonic sensor statistics...", Color.FromArgb(155, 89, 182));
+            
+            var startTime = DateTime.Now;
+            bool commandSent = mainForm.SendArduinoCommand("ULTRA_STATS");
+            var responseTime = (DateTime.Now - startTime).TotalMilliseconds;
+            
+            if (commandSent)
+            {
+                mainForm.LogMessage($"⚡ Statistics request sent in {responseTime:F0}ms", Color.FromArgb(46, 204, 113));
+                MessageBox.Show($"Ultrasonic sensor statistics requested!\n\nResponse Time: {responseTime:F0}ms\n\nCheck the main form log for comprehensive sensor performance data.", 
+                              "Statistics Requested", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                mainForm.LogMessage("❌ Failed to request sensor statistics", Color.FromArgb(231, 76, 60));
+                MessageBox.Show("Failed to send statistics request to Arduino.", "Request Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Add new button to reset ultrasonic sensor statistics
+        private void buttonResetUltrasonicStats_Click(object sender, EventArgs e)
+        {
+            if (mainForm == null || !mainForm.IsArduinoConnected())
+            {
+                MessageBox.Show("Arduino is not connected.", "Connection Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show("This will reset all ultrasonic sensor statistics to zero.\n\nThis is useful for starting fresh diagnostics.\n\nContinue?", 
+                                       "Reset Sensor Statistics", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            
+            if (result != DialogResult.Yes) return;
+
+            mainForm.LogMessage("🔄 Resetting ultrasonic sensor statistics...", Color.FromArgb(52, 152, 219));
+            
+            var startTime = DateTime.Now;
+            bool commandSent = mainForm.SendArduinoCommand("ULTRA_RESET");
+            var responseTime = (DateTime.Now - startTime).TotalMilliseconds;
+            
+            if (commandSent)
+            {
+                mainForm.LogMessage($"⚡ Reset command sent in {responseTime:F0}ms", Color.FromArgb(46, 204, 113));
+                MessageBox.Show($"Ultrasonic sensor statistics reset!\n\nResponse Time: {responseTime:F0}ms\n\nStatistics tracking restarted from zero.", 
+                              "Statistics Reset", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                mainForm.LogMessage("❌ Failed to reset sensor statistics", Color.FromArgb(231, 76, 60));
+                MessageBox.Show("Failed to send reset command to Arduino.", "Reset Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

@@ -49,10 +49,10 @@ namespace Automatic_Pet_Feeder.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("5")]
-        public int AutoFeedDuration {
+        [global::System.Configuration.DefaultSettingValueAttribute("1.5")]
+        public double AutoFeedDuration {
             get {
-                return ((int)(this["AutoFeedDuration"]));
+                return ((double)(this["AutoFeedDuration"]));
             }
             set {
                 this["AutoFeedDuration"] = value;

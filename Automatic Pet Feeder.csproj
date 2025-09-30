@@ -91,8 +91,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="Arduino_Pet_Feeder_Fixed.ino" />
-    <None Include="Arduino_Response_Time_Test.ino" />
+    <None Include="Arduino Code\Working Code.ino" />
+    <None Include="Arduino Code\Arduino_Response_Time_Test.ino" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -104,9 +104,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="README.md" />
+    <None Include="Ultrasonic_Sensor_Diagnostics_Guide.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

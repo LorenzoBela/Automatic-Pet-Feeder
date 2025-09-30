@@ -555,11 +555,11 @@ namespace Automatic_Pet_Feeder
                     return;
                 }
             }
-            else if (data.Contains("Distance: ERROR") || data.Contains("Ultrasonic timeout") || data.Contains("no echo"))
+            else if (data.Contains("Distance: ERROR") || data.Contains("Ultrasonic timeout") || data.Contains("no echo") || data.Contains("SENSOR COVERED"))
             {
-                UpdateFoodLevelStatus("Sensor Error", Color.FromArgb(243, 156, 18));
-                messageColor = Color.FromArgb(243, 156, 18);
-                messageKey = "sensor_error";
+                UpdateFoodLevelStatus("Food Available", Color.FromArgb(46, 204, 113));
+                messageColor = Color.FromArgb(46, 204, 113);
+                messageKey = "sensor_covered";
             }
             else if (data.ToLower().Contains("weight:") || data.ToLower().Contains("w:"))
             {
@@ -724,18 +724,22 @@ namespace Automatic_Pet_Feeder
                 }
 
                 // Use custom seconds if provided, otherwise use setting
-                int seconds = customSeconds ?? Properties.Settings.Default.AutoFeedDuration;
+                double durationSeconds = customSeconds ?? Properties.Settings.Default.AutoFeedDuration;
                 
-                // Ensure reasonable bounds (1-30 seconds)
-                seconds = Math.Max(1, Math.Min(30, seconds));
+                // Ensure reasonable bounds (0.5-30 seconds)
+                durationSeconds = Math.Max(0.5, Math.Min(30.0, durationSeconds));
+
+                // For Arduino command, we need to send integer seconds, but we can handle fractional
+                // If less than 1 second, we'll send 1 second but note the actual duration
+                int arduinoSeconds = Math.Max(1, (int)Math.Round(durationSeconds));
 
                 // Send dispense command to Arduino
-                string command = $"FEED_{seconds}";
+                string command = $"FEED_{arduinoSeconds}";
                 bool commandSent = SendArduinoCommand(command);
                 
                 if (commandSent)
                 {
-                    AppendToLog($"Automatic feeding triggered: {seconds} seconds", Color.FromArgb(46, 204, 113));
+                    AppendToLog($"Automatic feeding triggered: {durationSeconds:F1} seconds (Arduino: {arduinoSeconds}s)", Color.FromArgb(46, 204, 113));
                 }
                 else
                 {
